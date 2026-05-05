@@ -1,38 +1,41 @@
-import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
+import { useState } from 'react';
+import { Document, Page, Text, View, StyleSheet, Image, pdf } from '@react-pdf/renderer';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { useDataStore } from '../stores/dataStore';
-import { Download, FileText } from 'lucide-react';
+import { Download, FileText, Eye } from 'lucide-react';
+import Modal from './Modal';
 
 const styles = StyleSheet.create({
-  page: { padding: 48, fontFamily: 'Helvetica', backgroundColor: '#FFFFFF', fontSize: 10 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 36, paddingBottom: 24, borderBottomWidth: 2, borderBottomColor: '#1D9E75' },
-  logoBox: { width: 48, height: 48, backgroundColor: '#1D9E75', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  logoText: { fontSize: 20, fontWeight: 'bold', color: '#FFFFFF', fontFamily: 'Helvetica-Bold' },
-  companyName: { fontSize: 16, fontWeight: 'bold', color: '#141414', fontFamily: 'Helvetica-Bold', marginBottom: 3 },
-  companyDetail: { fontSize: 9, color: '#71717a', lineHeight: 1.5 },
-  invoiceLabel: { fontSize: 22, fontWeight: 'bold', color: '#1D9E75', fontFamily: 'Helvetica-Bold', textAlign: 'right' },
-  invoiceNum: { fontSize: 11, color: '#71717a', textAlign: 'right', marginTop: 4 },
-  metaRow: { flexDirection: 'row', gap: 40, marginBottom: 28 },
+  page: { padding: 40, fontFamily: 'Helvetica', backgroundColor: '#FFFFFF', fontSize: 11 },
+  logoArea: { alignItems: 'center', marginBottom: 24, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: '#000' },
+  logo: { width: 80, height: 60, objectFit: 'contain', marginBottom: 8 },
+  logoBox: { width: 80, height: 60, backgroundColor: '#1D9E75', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  logoText: { fontSize: 28, fontWeight: 'bold', color: '#FFFFFF', fontFamily: 'Helvetica-Bold' },
+  title: { fontSize: 28, fontWeight: 'bold', color: '#333333', fontFamily: 'Helvetica-Bold', marginBottom: 20 },
+  metaRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20, gap: 20 },
   metaBlock: { flex: 1 },
-  metaTitle: { fontSize: 9, fontWeight: 'bold', color: '#71717a', letterSpacing: 0.8, textTransform: 'uppercase', fontFamily: 'Helvetica-Bold', marginBottom: 6 },
-  metaValue: { fontSize: 11, color: '#141414', lineHeight: 1.5 },
-  tableHeader: { flexDirection: 'row', backgroundColor: '#f4f4f5', borderRadius: 6, padding: '8 12', marginBottom: 4 },
-  tableRow: { flexDirection: 'row', padding: '10 12', borderBottomWidth: 1, borderBottomColor: '#f4f4f5' },
+  metaLabel: { fontSize: 9, fontWeight: 'bold', color: '#666', letterSpacing: 0.5, textTransform: 'uppercase', fontFamily: 'Helvetica-Bold', marginBottom: 4 },
+  metaValue: { fontSize: 11, color: '#000' },
+  metaDots: { borderBottomWidth: 1, borderBottomColor: '#ccc', borderBottomStyle: 'dotted', marginBottom: 2 },
+  tableHeader: { flexDirection: 'row', borderTopWidth: 2, borderBottomWidth: 2, borderTopColor: '#000', borderBottomColor: '#000', paddingVertical: 8, marginTop: 16, marginBottom: 2 },
+  tableRow: { flexDirection: 'row', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: '#e0e0e0' },
+  colItem: { width: '22%' },
+  colQty: { width: '12%', textAlign: 'center' },
   colDesc: { flex: 1 },
-  colNum: { width: 60, textAlign: 'center' },
-  colAmt: { width: 80, textAlign: 'right' },
-  thText: { fontSize: 9, fontWeight: 'bold', color: '#71717a', fontFamily: 'Helvetica-Bold', textTransform: 'uppercase' },
-  tdText: { fontSize: 10, color: '#141414' },
-  tdMuted: { fontSize: 10, color: '#71717a' },
-  totals: { marginTop: 20, marginLeft: '55%' },
-  totalRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-  totalLabel: { fontSize: 10, color: '#71717a' },
-  totalValue: { fontSize: 10, color: '#141414', fontFamily: 'Helvetica-Bold' },
-  grandRow: { flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 2, borderTopColor: '#1D9E75', paddingTop: 10, marginTop: 8 },
-  grandLabel: { fontSize: 13, fontFamily: 'Helvetica-Bold', color: '#141414' },
-  grandValue: { fontSize: 13, fontFamily: 'Helvetica-Bold', color: '#1D9E75' },
-  footer: { position: 'absolute', bottom: 36, left: 48, right: 48, borderTopWidth: 1, borderTopColor: '#e4e4e7', paddingTop: 14, flexDirection: 'row', justifyContent: 'space-between' },
-  footerText: { fontSize: 8, color: '#a1a1aa' },
+  colCost: { width: '18%', textAlign: 'right' },
+  colAmt: { width: '18%', textAlign: 'right' },
+  thText: { fontSize: 9, fontWeight: 'bold', color: '#000', fontFamily: 'Helvetica-Bold', textTransform: 'uppercase' },
+  tdText: { fontSize: 10, color: '#000' },
+  tdMuted: { fontSize: 10, color: '#666' },
+  totalsBox: { marginTop: 16, paddingVertical: 12, paddingHorizontal: 8, borderWidth: 1, borderColor: '#000' },
+  totalRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4, fontSize: 10 },
+  subtotalRow: { color: '#000' },
+  vatRow: { color: '#000' },
+  grandTotalRow: { borderTopWidth: 1, borderTopColor: '#000', paddingTopVertical: 8, fontSize: 12, fontFamily: 'Helvetica-Bold', color: '#000' },
+  footer: { position: 'absolute', bottom: 20, left: 40, right: 40, fontSize: 8, color: '#666', borderTopWidth: 1, borderTopColor: '#ccc', paddingTop: 10 },
+  footerRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
+  signatureArea: { marginTop: 24, alignItems: 'flex-end' },
+  signatureLine: { borderTopWidth: 1, borderTopColor: '#000', width: 120, marginTop: 20, fontSize: 8, color: '#666', marginBottom: 2 },
 });
 
 function PDFDoc({ invoiceId }: { invoiceId: string }) {
@@ -45,76 +48,90 @@ function PDFDoc({ invoiceId }: { invoiceId: string }) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View>
-            {settings.logo
-              ? <Image src={settings.logo} style={{ width: 60, height: 60, objectFit: 'contain', marginBottom: 8 }} />
-              : <View style={styles.logoBox}><Text style={styles.logoText}>RC</Text></View>
-            }
-            <Text style={[styles.companyName, { marginTop: 8 }]}>{settings.companyName}</Text>
-            <Text style={styles.companyDetail}>{settings.poBox}</Text>
-            <Text style={styles.companyDetail}>{settings.phone.join(' · ')}</Text>
-            <Text style={styles.companyDetail}>{settings.emails[0]}</Text>
+        {/* Logo & Title */}
+        <View style={styles.logoArea}>
+          {settings.logo
+            ? <Image src={settings.logo} style={styles.logo} />
+            : <View style={styles.logoBox}><Text style={styles.logoText}>RC</Text></View>
+          }
+        </View>
+
+        {/* Title */}
+        <Text style={styles.title}>{typeLabel}</Text>
+
+        {/* Client Info Row */}
+        <View style={styles.metaRow}>
+          <View style={styles.metaBlock}>
+            <Text style={styles.metaLabel}>To:</Text>
+            <Text style={[styles.metaValue, styles.metaDots]}>{inv.clientName}</Text>
           </View>
-          <View>
-            <Text style={styles.invoiceLabel}>{typeLabel.toUpperCase()}</Text>
-            <Text style={styles.invoiceNum}>{inv.number}</Text>
+          <View style={styles.metaBlock}>
+            <Text style={styles.metaLabel}>Date:</Text>
+            <Text style={styles.metaValue}>{new Date(inv.date).toLocaleDateString('en-GB')}</Text>
           </View>
         </View>
 
-        {/* Meta */}
+        {/* Address Row */}
         <View style={styles.metaRow}>
           <View style={styles.metaBlock}>
-            <Text style={styles.metaTitle}>Billed To</Text>
-            <Text style={styles.metaValue}>{inv.clientName}</Text>
-            <Text style={[styles.metaValue, { color: '#71717a' }]}>{inv.clientAddress}</Text>
-          </View>
-          <View style={styles.metaBlock}>
-            <Text style={styles.metaTitle}>Invoice Details</Text>
-            <Text style={styles.metaValue}>Date: {new Date(inv.date).toLocaleDateString('en-GH')}</Text>
-            {inv.dueDate && <Text style={styles.metaValue}>Due: {new Date(inv.dueDate).toLocaleDateString('en-GH')}</Text>}
-            <Text style={styles.metaValue}>Status: {inv.status}</Text>
+            <Text style={styles.metaLabel}>Address:</Text>
+            <Text style={[styles.metaValue, styles.metaDots]}>{inv.clientAddress}</Text>
           </View>
         </View>
 
         {/* Table */}
         <View style={styles.tableHeader}>
+          <Text style={[styles.thText, styles.colItem]}>Item</Text>
+          <Text style={[styles.thText, styles.colQty]}>Qty</Text>
           <Text style={[styles.thText, styles.colDesc]}>Description</Text>
-          <Text style={[styles.thText, styles.colNum]}>Qty</Text>
-          <Text style={[styles.thText, styles.colAmt]}>Unit Cost</Text>
-          <Text style={[styles.thText, styles.colAmt]}>Amount</Text>
+          <Text style={[styles.thText, styles.colCost]}>Unit Cost</Text>
+          <Text style={[styles.thText, styles.colAmt]}>Amount {settings.currency}</Text>
         </View>
+
         {inv.items.map((item, i) => (
           <View key={i} style={styles.tableRow}>
+            <Text style={[styles.tdText, styles.colItem]}>Item {i + 1}</Text>
+            <Text style={[styles.tdMuted, styles.colQty]}>{item.qty}</Text>
             <Text style={[styles.tdText, styles.colDesc]}>{item.description}</Text>
-            <Text style={[styles.tdMuted, styles.colNum]}>{item.qty}</Text>
-            <Text style={[styles.tdMuted, styles.colAmt]}>{settings.currency} {item.unitCost.toFixed(2)}</Text>
-            <Text style={[styles.tdText, styles.colAmt]}>{settings.currency} {(item.qty * item.unitCost).toFixed(2)}</Text>
+            <Text style={[styles.tdMuted, styles.colCost]}>{item.unitCost.toFixed(2)}</Text>
+            <Text style={[styles.tdText, styles.colAmt]}>{(item.qty * item.unitCost).toFixed(2)}</Text>
           </View>
         ))}
 
-        {/* Totals */}
-        <View style={styles.totals}>
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Subtotal</Text>
-            <Text style={styles.totalValue}>{settings.currency} {inv.subtotal.toFixed(2)}</Text>
+        {/* Bottom border for table */}
+        <View style={{ borderBottomWidth: 2, borderBottomColor: '#000', marginBottom: 16 }} />
+
+        {/* Totals Box */}
+        <View style={styles.totalsBox}>
+          <View style={[styles.totalRow, styles.subtotalRow]}>
+            <Text>SUBTOTAL</Text>
+            <Text>{inv.subtotal.toFixed(2)}</Text>
           </View>
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>VAT / NHIL (20%)</Text>
-            <Text style={styles.totalValue}>{settings.currency} {inv.vat.toFixed(2)}</Text>
+          <View style={[styles.totalRow, styles.vatRow]}>
+            <Text>VAT/NHIL 20 %</Text>
+            <Text>{inv.vat.toFixed(2)}</Text>
           </View>
-          <View style={styles.grandRow}>
-            <Text style={styles.grandLabel}>TOTAL DUE</Text>
-            <Text style={styles.grandValue}>{settings.currency} {inv.total.toFixed(2)}</Text>
+          <View style={[styles.totalRow, styles.grandTotalRow]}>
+            <Text>TOTAL</Text>
+            <Text>{inv.total.toFixed(2)}</Text>
           </View>
+        </View>
+
+        {/* Signature */}
+        <View style={styles.signatureArea}>
+          <Text style={{ fontSize: 9, color: '#666', marginBottom: 4 }}>Sign:...........................</Text>
         </View>
 
         {/* Footer */}
         <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>{settings.website}</Text>
-          <Text style={styles.footerText}>{settings.companyName} · {settings.poBox}</Text>
-          <Text style={styles.footerText}>{settings.phone[0]}</Text>
+          <View style={styles.footerRow}>
+            <Text>Po. box 108 Teshie Accra</Text>
+            <Text>Tel: {settings.phone.join(', ')}</Text>
+          </View>
+          <View style={styles.footerRow}>
+            <Text>Email: {settings.emails.join(', ')}</Text>
+            <Text>{settings.website}</Text>
+          </View>
         </View>
       </Page>
     </Document>
@@ -123,27 +140,57 @@ function PDFDoc({ invoiceId }: { invoiceId: string }) {
 
 export default function InvoicePDF({ invoiceId }: { invoiceId: string }) {
   const { getInvoice } = useDataStore();
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
+
   const inv = getInvoice(invoiceId);
   if (!inv) return <p style={{ color: 'var(--text-muted)' }}>Invoice not found</p>;
 
+  const handlePreview = async () => {
+    try {
+      const blob = await pdf(<PDFDoc invoiceId={invoiceId} />).toBlob();
+      setPreviewUrl(URL.createObjectURL(blob));
+      setShowPreview(true);
+    } catch (err) {
+      console.error('Preview error:', err);
+    }
+  };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <>
       <div style={{ padding: '16px 20px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 10 }}>
         <div style={{ display: 'flex', gap: 12, marginBottom: 12, alignItems: 'center' }}>
           <FileText size={18} style={{ color: 'var(--primary)' }} />
           <span style={{ fontWeight: 600 }}>{inv.number}</span>
           <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>· {inv.clientName} · {inv.status}</span>
         </div>
-        <PDFDownloadLink
-          document={<PDFDoc invoiceId={invoiceId} />}
-          fileName={`${inv.number}.pdf`}
-          className="btn btn-primary"
-        >
-          {({ loading }) => (
-            <><Download size={16} /> {loading ? 'Generating…' : 'Download PDF'}</>
-          )}
-        </PDFDownloadLink>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={handlePreview} className="btn btn-ghost" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Eye size={16} /> Preview
+          </button>
+          <PDFDownloadLink
+            document={<PDFDoc invoiceId={invoiceId} />}
+            fileName={`${inv.number}.pdf`}
+            className="btn btn-primary"
+          >
+            {({ loading }) => (
+              <><Download size={16} /> {loading ? 'Generating…' : 'Download'}</>
+            )}
+          </PDFDownloadLink>
+        </div>
       </div>
-    </div>
+
+      <Modal isOpen={showPreview} title={`Preview: ${inv.number}`} onClose={() => setShowPreview(false)}>
+        <div style={{ height: '600px', backgroundColor: '#f5f5f5', borderRadius: 8, overflow: 'hidden' }}>
+          {previewUrl && (
+            <iframe
+              src={previewUrl}
+              style={{ width: '100%', height: '100%', border: 'none' }}
+              title="Invoice Preview"
+            />
+          )}
+        </div>
+      </Modal>
+    </>
   );
 }

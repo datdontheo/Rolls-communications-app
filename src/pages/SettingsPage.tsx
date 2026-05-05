@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Save, Upload, Building2, Sliders, Lock, Check } from 'lucide-react';
+import { Save, Upload, Building2, Sliders, Lock, Check, Trash2 } from 'lucide-react';
 import Layout from '../components/Layout';
 import { useDataStore } from '../stores/dataStore';
 import { useAuthStore } from '../stores/authStore';
@@ -36,6 +36,30 @@ export default function SettingsPage() {
     if (pwForm.new.length < 6) { toast.error('Password must be at least 6 characters'); return; }
     if (changePassword(pwForm.old, pwForm.new)) { toast.success('Password changed'); setPwForm({ old: '', new: '', confirm: '' }); }
     else { toast.error('Current password is incorrect'); }
+  };
+
+  const handleClearData = async () => {
+    if (!confirm('WARNING: This will delete ALL app data from Supabase (clients, invoices, jobs, quotations, income, expenses, and stock items). This cannot be undone. Continue?')) return;
+    if (!confirm('This action is PERMANENT. Are you absolutely sure?')) return;
+
+    try {
+      const { clients, invoices, quotations, jobs, income, expenses, stock } = useDataStore.getState();
+
+      await Promise.all([
+        ...clients.map(c => useDataStore.getState().deleteClient(c.id).catch(() => null)),
+        ...invoices.map(i => useDataStore.getState().deleteInvoice(i.id).catch(() => null)),
+        ...quotations.map(q => useDataStore.getState().deleteQuotation(q.id).catch(() => null)),
+        ...jobs.map(j => useDataStore.getState().deleteJob(j.id).catch(() => null)),
+        ...income.map(inc => useDataStore.getState().deleteIncomeEntry(inc.id).catch(() => null)),
+        ...expenses.map(exp => useDataStore.getState().deleteExpenseEntry(exp.id).catch(() => null)),
+        ...stock.map(s => useDataStore.getState().deleteStockItem(s.id).catch(() => null)),
+      ]);
+
+      toast.success('All data cleared successfully');
+    } catch (err) {
+      toast.error('Failed to clear some data');
+      console.error(err);
+    }
   };
 
   return (
@@ -150,7 +174,7 @@ export default function SettingsPage() {
                 <div className="form-group">
                   <label className="form-label">Currency Symbol</label>
                   <select className="input-field" value={form.currency} onChange={e => setForm(f => ({ ...f, currency: e.target.value }))}>
-                    <option value="GH₵">GH₵ — Ghana Cedi</option>
+                    <option value="GHS">GHS — Ghana Cedi</option>
                     <option value="$">$ — US Dollar</option>
                     <option value="€">€ — Euro</option>
                     <option value="£">£ — British Pound</option>
@@ -171,28 +195,39 @@ export default function SettingsPage() {
         )}
 
         {tab === 'security' && (
-          <div className="card">
-            <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Change Password</h3>
-            <p style={{ fontSize: 13.5, color: 'var(--text-muted)', marginBottom: 24 }}>Update your admin login credentials</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 400 }}>
-              <div className="form-group">
-                <label className="form-label">Current Password</label>
-                <input type="password" className="input-field" placeholder="••••••••" value={pwForm.old}
-                  onChange={e => setPwForm(f => ({ ...f, old: e.target.value }))} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div className="card">
+              <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Change Password</h3>
+              <p style={{ fontSize: 13.5, color: 'var(--text-muted)', marginBottom: 24 }}>Update your admin login credentials</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 400 }}>
+                <div className="form-group">
+                  <label className="form-label">Current Password</label>
+                  <input type="password" className="input-field" placeholder="••••••••" value={pwForm.old}
+                    onChange={e => setPwForm(f => ({ ...f, old: e.target.value }))} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">New Password</label>
+                  <input type="password" className="input-field" placeholder="••••••••" value={pwForm.new}
+                    onChange={e => setPwForm(f => ({ ...f, new: e.target.value }))} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Confirm New Password</label>
+                  <input type="password" className="input-field" placeholder="••••••••" value={pwForm.confirm}
+                    onChange={e => setPwForm(f => ({ ...f, confirm: e.target.value }))} />
+                </div>
+                <button onClick={handleChangePassword} className="btn btn-primary">
+                  <Check size={16} /> Update Password
+                </button>
               </div>
-              <div className="form-group">
-                <label className="form-label">New Password</label>
-                <input type="password" className="input-field" placeholder="••••••••" value={pwForm.new}
-                  onChange={e => setPwForm(f => ({ ...f, new: e.target.value }))} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Confirm New Password</label>
-                <input type="password" className="input-field" placeholder="••••••••" value={pwForm.confirm}
-                  onChange={e => setPwForm(f => ({ ...f, confirm: e.target.value }))} />
-              </div>
-              <button onClick={handleChangePassword} className="btn btn-primary">
-                <Check size={16} /> Update Password
+            </div>
+
+            <div className="card" style={{ borderColor: '#dc2626' }}>
+              <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4, color: '#dc2626' }}>Danger Zone</h3>
+              <p style={{ fontSize: 13.5, color: 'var(--text-muted)', marginBottom: 16 }}>Clear all app data from Supabase</p>
+              <button onClick={handleClearData} className="btn btn-danger btn-full">
+                <Trash2 size={16} /> Clear All App Data
               </button>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 12 }}>⚠️ This permanently deletes all clients, invoices, quotations, jobs, income, expenses, and stock items from Supabase. This cannot be undone.</p>
             </div>
           </div>
         )}
