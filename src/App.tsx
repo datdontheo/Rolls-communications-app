@@ -30,8 +30,13 @@ function App() {
   useEffect(() => {
     const init = async () => {
       try {
+        console.log('App: Starting initialization...');
+        console.log('App: Initializing theme...');
         await initTheme();
+        console.log('App: Theme initialized');
+        console.log('App: Loading data...');
         await loadAllData();
+        console.log('App: Data loaded');
       } catch (err) {
         console.error('App initialization error:', err);
       }
