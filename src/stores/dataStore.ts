@@ -149,7 +149,10 @@ export const useDataStore = create<DataState>((set, get) => ({
         id,
         createdAt,
       });
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase insert error:', error);
+        throw new Error(`Failed to create client: ${error.message || JSON.stringify(error)}`);
+      }
       set((state) => ({ clients: [...state.clients, { ...client, id, createdAt }] }));
     } catch (err) {
       console.error('Failed to add client:', err);

@@ -32,7 +32,9 @@ export default function ClientForm({ clientId, onClose }: { clientId?: string | 
       else { await addClient(data); toast.success('Client created'); }
       onClose();
     } catch (err) {
-      toast.error(client ? 'Failed to update client' : 'Failed to create client');
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      console.error('Client form error:', err);
+      toast.error(client ? `Failed to update client: ${errorMsg}` : `Failed to create client: ${errorMsg}`);
     }
   };
 
