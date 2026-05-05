@@ -26,14 +26,14 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
   const { checkAuth } = useAuthStore();
-  const { loadFromStorage } = useDataStore();
+  const { loadAllData } = useDataStore();
   const { initTheme } = useThemeStore();
 
   useEffect(() => {
     checkAuth();
-    loadFromStorage();
+    loadAllData();
     initTheme();
-  }, []);
+  }, [loadAllData]);
 
   return (
     <>

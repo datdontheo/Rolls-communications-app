@@ -52,27 +52,31 @@ export default function InvoiceForm({ invoiceId, onClose }: { invoiceId?: string
   const vat = (subtotal * settings.vatRate) / 100;
   const total = subtotal + vat;
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = async (data: FormData) => {
     const client = clients.find(c => c.id === data.clientId);
     if (!client) { toast.error('Invalid client'); return; }
 
-    const payload = {
-      type: data.type as any,
-      clientId: data.clientId,
-      clientName: client.name,
-      clientAddress: client.address,
-      date: data.date,
-      dueDate: data.dueDate,
-      items: data.items.map(item => ({ id: Math.random().toString(36).substr(2, 9), ...item })),
-      subtotal, vat, total,
-      notes: data.notes,
-      status: data.status,
-      number: invoice?.number || generateInvoiceNumber(settings.invoicePrefix),
-    };
+    try {
+      const payload = {
+        type: data.type as any,
+        clientId: data.clientId,
+        clientName: client.name,
+        clientAddress: client.address,
+        date: data.date,
+        dueDate: data.dueDate,
+        items: data.items.map(item => ({ id: Math.random().toString(36).substr(2, 9), ...item })),
+        subtotal, vat, total,
+        notes: data.notes,
+        status: data.status,
+        number: invoice?.number || generateInvoiceNumber(settings.invoicePrefix),
+      };
 
-    if (invoice) { updateInvoice(invoice.id, payload); toast.success('Invoice updated'); }
-    else { addInvoice(payload as any); toast.success('Invoice created'); }
-    onClose();
+      if (invoice) { await updateInvoice(invoice.id, payload); toast.success('Invoice updated'); }
+      else { await addInvoice(payload as any); toast.success('Invoice created'); }
+      onClose();
+    } catch (err) {
+      toast.error(invoice ? 'Failed to update invoice' : 'Failed to create invoice');
+    }
   };
 
   return (

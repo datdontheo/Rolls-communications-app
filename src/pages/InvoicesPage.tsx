@@ -35,10 +35,14 @@ export default function InvoicesPage() {
     overdue: invoices.filter(i => i.status === 'Overdue').reduce((s, i) => s + i.total, 0),
   }), [invoices]);
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Delete this invoice? This cannot be undone.')) {
-      deleteInvoice(id);
-      toast.success('Invoice deleted');
+      try {
+        await deleteInvoice(id);
+        toast.success('Invoice deleted');
+      } catch {
+        toast.error('Failed to delete invoice');
+      }
     }
   };
 

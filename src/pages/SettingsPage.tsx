@@ -13,7 +13,14 @@ export default function SettingsPage() {
   const [form, setForm] = useState(settings);
   const [pwForm, setPwForm] = useState({ old: '', new: '', confirm: '' });
 
-  const handleSave = () => { updateSettings(form); toast.success('Settings saved'); };
+  const handleSave = async () => {
+    try {
+      await updateSettings(form);
+      toast.success('Settings saved');
+    } catch {
+      toast.error('Failed to save settings');
+    }
+  };
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

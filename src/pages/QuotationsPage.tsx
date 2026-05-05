@@ -20,41 +20,56 @@ export default function QuotationsPage() {
 
   const filtered = useMemo(() => quotations.filter(q => !statusFilter || q.status === statusFilter), [quotations, statusFilter]);
 
-  const handleDelete = (id: string) => {
-    if (confirm('Delete this quotation?')) { deleteQuotation(id); toast.success('Quotation deleted'); }
+  const handleDelete = async (id: string) => {
+    if (confirm('Delete this quotation?')) {
+      try {
+        await deleteQuotation(id);
+        toast.success('Quotation deleted');
+      } catch {
+        toast.error('Failed to delete quotation');
+      }
+    }
   };
 
-  const convertToJob = (q: typeof quotations[0]) => {
-    addJob({
-      clientId: q.clientId,
-      clientName: q.clientName,
-      serviceType: 'Advertising',
-      status: 'New',
-      assignedTo: 'Unassigned',
-      deadline: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
-      linkedQuotationId: q.id,
-      stages: [{ id: '1', name: 'Production', completed: false }, { id: '2', name: 'QC', completed: false }],
-      internalNotes: `Created from quotation ${q.number}`,
-    } as any);
-    toast.success('Job order created from quotation');
+  const convertToJob = async (q: typeof quotations[0]) => {
+    try {
+      await addJob({
+        clientId: q.clientId,
+        clientName: q.clientName,
+        serviceType: 'Advertising',
+        status: 'New',
+        assignedTo: 'Unassigned',
+        deadline: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
+        linkedQuotationId: q.id,
+        stages: [{ id: '1', name: 'Production', completed: false }, { id: '2', name: 'QC', completed: false }],
+        internalNotes: `Created from quotation ${q.number}`,
+      } as any);
+      toast.success('Job order created from quotation');
+    } catch {
+      toast.error('Failed to create job order');
+    }
   };
 
-  const convertToInvoice = (q: typeof quotations[0]) => {
-    const client = clients.find(c => c.id === q.clientId);
-    addInvoice({
-      type: 'final',
-      clientId: q.clientId,
-      clientName: q.clientName,
-      clientAddress: client?.address || '',
-      date: new Date().toISOString().split('T')[0],
-      items: q.items,
-      subtotal: q.subtotal,
-      vat: q.vat,
-      total: q.total,
-      status: 'Draft',
-      notes: `From quotation ${q.number}`,
-    } as any);
-    toast.success('Invoice created from quotation');
+  const convertToInvoice = async (q: typeof quotations[0]) => {
+    try {
+      const client = clients.find(c => c.id === q.clientId);
+      await addInvoice({
+        type: 'final',
+        clientId: q.clientId,
+        clientName: q.clientName,
+        clientAddress: client?.address || '',
+        date: new Date().toISOString().split('T')[0],
+        items: q.items,
+        subtotal: q.subtotal,
+        vat: q.vat,
+        total: q.total,
+        status: 'Draft',
+        notes: `From quotation ${q.number}`,
+      } as any);
+      toast.success('Invoice created from quotation');
+    } catch {
+      toast.error('Failed to create invoice');
+    }
   };
 
   return (

@@ -26,10 +26,14 @@ export default function ClientForm({ clientId, onClose }: { clientId?: string | 
     defaultValues: client ?? { category: 'Active', name: '', company: '', email: '', phone: '', address: '' },
   });
 
-  const onSubmit = (data: FormData) => {
-    if (client) { updateClient(client.id, data); toast.success('Client updated'); }
-    else { addClient(data); toast.success('Client created'); }
-    onClose();
+  const onSubmit = async (data: FormData) => {
+    try {
+      if (client) { await updateClient(client.id, data); toast.success('Client updated'); }
+      else { await addClient(data); toast.success('Client created'); }
+      onClose();
+    } catch (err) {
+      toast.error(client ? 'Failed to update client' : 'Failed to create client');
+    }
   };
 
   return (

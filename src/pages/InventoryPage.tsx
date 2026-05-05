@@ -27,15 +27,26 @@ export default function InventoryPage() {
   const openAdd = () => { setEditId(null); setForm(blankForm()); setIsFormOpen(true); };
   const openEdit = (item: StockItem) => { setEditId(item.id); setForm({ materialName: item.materialName, category: item.category, unit: item.unit, currentStock: item.currentStock, reorderLevel: item.reorderLevel, unitCost: item.unitCost }); setIsFormOpen(true); };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.materialName || !form.unit) { toast.error('Name and unit are required'); return; }
-    if (editId) { updateStockItem(editId, form); toast.success('Item updated'); }
-    else { addStockItem(form); toast.success('Item added'); }
-    setIsFormOpen(false);
+    try {
+      if (editId) { await updateStockItem(editId, form); toast.success('Item updated'); }
+      else { await addStockItem(form); toast.success('Item added'); }
+      setIsFormOpen(false);
+    } catch {
+      toast.error(editId ? 'Failed to update item' : 'Failed to add item');
+    }
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm('Delete this stock item?')) { deleteStockItem(id); toast.success('Item deleted'); }
+  const handleDelete = async (id: string) => {
+    if (confirm('Delete this stock item?')) {
+      try {
+        await deleteStockItem(id);
+        toast.success('Item deleted');
+      } catch {
+        toast.error('Failed to delete item');
+      }
+    }
   };
 
   const categories = ['Paper', 'Vinyl', 'Ink', 'Metal', 'Substrate', 'Other'];

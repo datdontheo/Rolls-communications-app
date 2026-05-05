@@ -33,8 +33,15 @@ export default function JobsPage() {
     (!search || j.clientName.toLowerCase().includes(search.toLowerCase()) || j.jobId.toLowerCase().includes(search.toLowerCase()))
   ), [jobs, statusFilter, search]);
 
-  const handleDelete = (id: string) => {
-    if (confirm('Delete this job?')) { deleteJob(id); toast.success('Job deleted'); }
+  const handleDelete = async (id: string) => {
+    if (confirm('Delete this job?')) {
+      try {
+        await deleteJob(id);
+        toast.success('Job deleted');
+      } catch {
+        toast.error('Failed to delete job');
+      }
+    }
   };
 
   const statuses = ['', 'New', 'In Progress', 'Under Review', 'Completed', 'Delivered'];

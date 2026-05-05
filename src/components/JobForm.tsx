@@ -42,22 +42,26 @@ export default function JobForm({ jobId, onClose }: { jobId?: string | null; onC
 
   const { fields, append, remove } = useFieldArray({ control, name: 'stages' });
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = async (data: FormData) => {
     const client = clients.find(c => c.id === data.clientId);
     if (!client) { toast.error('Select a valid client'); return; }
-    const payload = {
-      clientId: data.clientId,
-      clientName: client.name,
-      serviceType: data.serviceType,
-      status: data.status,
-      assignedTo: data.assignedTo,
-      deadline: data.deadline,
-      stages: data.stages.map(s => ({ id: Math.random().toString(36).substr(2, 9), name: s.name, completed: false })),
-      internalNotes: data.internalNotes || '',
-    };
-    if (job) { updateJob(job.id, payload); toast.success('Job updated'); }
-    else { addJob(payload as any); toast.success('Job created'); }
-    onClose();
+    try {
+      const payload = {
+        clientId: data.clientId,
+        clientName: client.name,
+        serviceType: data.serviceType,
+        status: data.status,
+        assignedTo: data.assignedTo,
+        deadline: data.deadline,
+        stages: data.stages.map(s => ({ id: Math.random().toString(36).substr(2, 9), name: s.name, completed: false })),
+        internalNotes: data.internalNotes || '',
+      };
+      if (job) { await updateJob(job.id, payload); toast.success('Job updated'); }
+      else { await addJob(payload as any); toast.success('Job created'); }
+      onClose();
+    } catch (err) {
+      toast.error(job ? 'Failed to update job' : 'Failed to create job');
+    }
   };
 
   return (

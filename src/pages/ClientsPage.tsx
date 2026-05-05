@@ -25,8 +25,15 @@ export default function ClientsPage() {
       c.company.toLowerCase().includes(search.toLowerCase()))
   ), [clients, search, catFilter]);
 
-  const handleDelete = (id: string) => {
-    if (confirm('Delete this client?')) { deleteClient(id); toast.success('Client deleted'); }
+  const handleDelete = async (id: string) => {
+    if (confirm('Delete this client?')) {
+      try {
+        await deleteClient(id);
+        toast.success('Client deleted');
+      } catch {
+        toast.error('Failed to delete client');
+      }
+    }
   };
 
   const clientRevenue = (id: string) =>

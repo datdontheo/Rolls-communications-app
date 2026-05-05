@@ -47,22 +47,26 @@ export default function QuotationForm({ quotationId, onClose }: { quotationId?: 
   const vat = (subtotal * settings.vatRate) / 100;
   const total = subtotal + vat;
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = async (data: FormData) => {
     const client = clients.find(c => c.id === data.clientId);
     if (!client) { toast.error('Select a valid client'); return; }
-    const payload = {
-      clientId: data.clientId,
-      clientName: client.name,
-      date: data.date,
-      items: data.items.map(item => ({ id: Math.random().toString(36).substr(2, 9), ...item })),
-      subtotal, vat, total,
-      notes: data.notes,
-      status: data.status,
-      number: quotation?.number || generateQuoteNumber(settings.invoicePrefix),
-    };
-    if (quotation) { updateQuotation(quotation.id, payload); toast.success('Quotation updated'); }
-    else { addQuotation(payload as any); toast.success('Quotation created'); }
-    onClose();
+    try {
+      const payload = {
+        clientId: data.clientId,
+        clientName: client.name,
+        date: data.date,
+        items: data.items.map(item => ({ id: Math.random().toString(36).substr(2, 9), ...item })),
+        subtotal, vat, total,
+        notes: data.notes,
+        status: data.status,
+        number: quotation?.number || generateQuoteNumber(settings.invoicePrefix),
+      };
+      if (quotation) { await updateQuotation(quotation.id, payload); toast.success('Quotation updated'); }
+      else { await addQuotation(payload as any); toast.success('Quotation created'); }
+      onClose();
+    } catch (err) {
+      toast.error(quotation ? 'Failed to update quotation' : 'Failed to create quotation');
+    }
   };
 
   return (

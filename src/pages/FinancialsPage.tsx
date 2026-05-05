@@ -23,18 +23,26 @@ export default function FinancialsPage() {
     return { totalInc, totalExp, net: totalInc - totalExp, monthInc, monthExp };
   }, [income, expenses]);
 
-  const handleAddIncome = () => {
+  const handleAddIncome = async () => {
     if (!incForm.description || !incForm.amount) { toast.error('Fill in description and amount'); return; }
-    addIncomeEntry({ ...incForm, serviceType: incForm.serviceType as any, paymentMethod: incForm.paymentMethod as any, amount: parseFloat(incForm.amount) });
-    setIncForm(f => ({ ...f, description: '', amount: '', clientName: '' }));
-    toast.success('Income entry added');
+    try {
+      await addIncomeEntry({ ...incForm, serviceType: incForm.serviceType as any, paymentMethod: incForm.paymentMethod as any, amount: parseFloat(incForm.amount) });
+      setIncForm(f => ({ ...f, description: '', amount: '', clientName: '' }));
+      toast.success('Income entry added');
+    } catch (err) {
+      toast.error('Failed to add income entry');
+    }
   };
 
-  const handleAddExpense = () => {
+  const handleAddExpense = async () => {
     if (!expForm.description || !expForm.amount) { toast.error('Fill in description and amount'); return; }
-    addExpenseEntry({ ...expForm, category: expForm.category as any, amount: parseFloat(expForm.amount) });
-    setExpForm(f => ({ ...f, description: '', vendor: '', amount: '' }));
-    toast.success('Expense entry added');
+    try {
+      await addExpenseEntry({ ...expForm, category: expForm.category as any, amount: parseFloat(expForm.amount) });
+      setExpForm(f => ({ ...f, description: '', vendor: '', amount: '' }));
+      toast.success('Expense entry added');
+    } catch (err) {
+      toast.error('Failed to add expense entry');
+    }
   };
 
   return (
@@ -130,7 +138,7 @@ export default function FinancialsPage() {
                       <td>{e.description}</td>
                       <td className="text-right"><span style={{ fontWeight: 700, color: '#16a34a' }}>{formatCurrency(e.amount, settings.currency)}</span></td>
                       <td className="text-right">
-                        <button onClick={() => { deleteIncomeEntry(e.id); toast.success('Entry deleted'); }} className="btn btn-danger btn-icon btn-sm"><Trash2 size={15} /></button>
+                        <button onClick={async () => { try { await deleteIncomeEntry(e.id); toast.success('Entry deleted'); } catch { toast.error('Failed to delete'); } }} className="btn btn-danger btn-icon btn-sm"><Trash2 size={15} /></button>
                       </td>
                     </tr>
                   )) : (
@@ -193,7 +201,7 @@ export default function FinancialsPage() {
                       <td>{e.description}</td>
                       <td className="text-right"><span style={{ fontWeight: 700, color: '#dc2626' }}>{formatCurrency(e.amount, settings.currency)}</span></td>
                       <td className="text-right">
-                        <button onClick={() => { deleteExpenseEntry(e.id); toast.success('Entry deleted'); }} className="btn btn-danger btn-icon btn-sm"><Trash2 size={15} /></button>
+                        <button onClick={async () => { try { await deleteExpenseEntry(e.id); toast.success('Entry deleted'); } catch { toast.error('Failed to delete'); } }} className="btn btn-danger btn-icon btn-sm"><Trash2 size={15} /></button>
                       </td>
                     </tr>
                   )) : (
