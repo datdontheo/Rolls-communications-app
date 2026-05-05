@@ -9,27 +9,20 @@ import { generateInvoiceNumber } from '../utils/generators';
 const schema = z.object({
   type: z.enum(['proforma', 'final', 'receipt']),
   clientId: z.string().min(1, 'Client is required'),
-  date: z.string(),
+  date: z.string().min(1, 'Date is required'),
   dueDate: z.string().optional(),
-  items: z.array(
-    z.object({
-      description: z.string().min(1, 'Description is required'),
-      qty: z.number().min(1, 'Quantity must be at least 1'),
-      unitCost: z.number().min(0, 'Unit cost must be positive'),
-    })
-  ),
+  items: z.array(z.object({
+    description: z.string().min(1, 'Required'),
+    qty: z.number().min(1, 'Min 1'),
+    unitCost: z.number().min(0, 'Min 0'),
+  })).min(1, 'Add at least one item'),
   notes: z.string().optional(),
   status: z.enum(['Draft', 'Sent', 'Paid', 'Overdue']),
 });
 
 type FormData = z.infer<typeof schema>;
 
-interface InvoiceFormProps {
-  invoiceId?: string | null;
-  onClose: () => void;
-}
-
-export default function InvoiceForm({ invoiceId, onClose }: InvoiceFormProps) {
+export default function InvoiceForm({ invoiceId, onClose }: { invoiceId?: string | null; onClose: () => void }) {
   const { clients, addInvoice, updateInvoice, getInvoice, settings } = useDataStore();
   const toast = useToast();
   const invoice = invoiceId ? getInvoice(invoiceId) : null;
@@ -53,24 +46,17 @@ export default function InvoiceForm({ invoiceId, onClose }: InvoiceFormProps) {
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'items',
-  });
-
+  const { fields, append, remove } = useFieldArray({ control, name: 'items' });
   const items = watch('items');
-  const subtotal = items.reduce((sum, item) => sum + (item.qty * item.unitCost), 0);
+  const subtotal = items.reduce((s, i) => s + (i.qty || 0) * (i.unitCost || 0), 0);
   const vat = (subtotal * settings.vatRate) / 100;
   const total = subtotal + vat;
 
   const onSubmit = (data: FormData) => {
     const client = clients.find(c => c.id === data.clientId);
-    if (!client) {
-      toast.error('Invalid client');
-      return;
-    }
+    if (!client) { toast.error('Invalid client'); return; }
 
-    const invoiceData = {
+    const payload = {
       type: data.type as any,
       clientId: data.clientId,
       clientName: client.name,
@@ -78,155 +64,123 @@ export default function InvoiceForm({ invoiceId, onClose }: InvoiceFormProps) {
       date: data.date,
       dueDate: data.dueDate,
       items: data.items.map(item => ({ id: Math.random().toString(36).substr(2, 9), ...item })),
-      subtotal,
-      vat,
-      total,
+      subtotal, vat, total,
       notes: data.notes,
       status: data.status,
       number: invoice?.number || generateInvoiceNumber(settings.invoicePrefix),
     };
 
-    if (invoice) {
-      updateInvoice(invoice.id, invoiceData);
-      toast.success('Invoice updated');
-    } else {
-      addInvoice(invoiceData as any);
-      toast.success('Invoice created');
-    }
+    if (invoice) { updateInvoice(invoice.id, payload); toast.success('Invoice updated'); }
+    else { addInvoice(payload as any); toast.success('Invoice created'); }
     onClose();
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-[color:var(--color-text-primary)] mb-2">
-            Invoice Type
-          </label>
+    <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div className="grid-2">
+        <div className="form-group">
+          <label className="form-label">Invoice Type</label>
           <select {...register('type')} className="input-field">
-            <option value="proforma">Pro-forma</option>
+            <option value="proforma">Pro-forma Invoice</option>
             <option value="final">Final Invoice</option>
             <option value="receipt">Receipt</option>
           </select>
         </div>
-
-        <div>
-          <label className="block text-sm font-medium text-[color:var(--color-text-primary)] mb-2">
-            Client
-          </label>
+        <div className="form-group">
+          <label className="form-label">Client *</label>
           <select {...register('clientId')} className="input-field">
-            <option value="">Select a client</option>
-            {clients.map(c => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
+            <option value="">Select client…</option>
+            {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
-          {errors.clientId && <p className="text-xs text-red-600 mt-1">{errors.clientId.message}</p>}
+          {errors.clientId && <p className="form-error">{errors.clientId.message}</p>}
         </div>
-
-        <div>
-          <label className="block text-sm font-medium text-[color:var(--color-text-primary)] mb-2">
-            Date
-          </label>
-          <input {...register('date')} type="date" className="input-field" />
+        <div className="form-group">
+          <label className="form-label">Date</label>
+          <input type="date" {...register('date')} className="input-field" />
         </div>
-
-        <div>
-          <label className="block text-sm font-medium text-[color:var(--color-text-primary)] mb-2">
-            Due Date
-          </label>
-          <input {...register('dueDate')} type="date" className="input-field" />
+        <div className="form-group">
+          <label className="form-label">Due Date</label>
+          <input type="date" {...register('dueDate')} className="input-field" />
         </div>
       </div>
 
+      {/* Line items */}
       <div>
-        <label className="block text-sm font-medium text-[color:var(--color-text-primary)] mb-2">
-          Line Items
-        </label>
-        <div className="space-y-3">
+        <label className="form-label" style={{ marginBottom: 10, display: 'block' }}>Line Items</label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {/* Header */}
+          <div className="line-item-row" style={{ padding: '0 0 4px' }}>
+            <p style={{ flex: 1, fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Description</p>
+            <p style={{ width: 80, fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Qty</p>
+            <p style={{ width: 110, fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unit Cost</p>
+            <p style={{ width: 110, fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Total</p>
+            <div style={{ width: 36 }} />
+          </div>
+
           {fields.map((field, idx) => (
-            <div key={field.id} className="flex gap-3 items-start">
-              <input
-                {...register(`items.${idx}.description`)}
-                placeholder="Description"
-                className="input-field flex-1"
-              />
-              <input
-                {...register(`items.${idx}.qty`, { valueAsNumber: true })}
-                type="number"
-                placeholder="Qty"
-                className="input-field w-20"
-              />
-              <input
-                {...register(`items.${idx}.unitCost`, { valueAsNumber: true })}
-                type="number"
-                step="0.01"
-                placeholder="Unit Cost"
-                className="input-field w-24"
-              />
-              <button
-                type="button"
-                onClick={() => remove(idx)}
-                className="p-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
-              >
-                <Trash2 size={18} />
+            <div key={field.id} className="line-item-row" style={{ alignItems: 'center' }}>
+              <div className="line-item-desc">
+                <input {...register(`items.${idx}.description`)} placeholder="Item description" className="input-field" />
+              </div>
+              <div className="line-item-qty">
+                <input {...register(`items.${idx}.qty`, { valueAsNumber: true })} type="number" min={1} className="input-field" />
+              </div>
+              <div className="line-item-cost">
+                <input {...register(`items.${idx}.unitCost`, { valueAsNumber: true })} type="number" step="0.01" min={0} className="input-field" />
+              </div>
+              <div style={{ width: 110, textAlign: 'right', fontSize: 13.5, fontWeight: 600, color: 'var(--text)' }}>
+                {settings.currency} {((items[idx]?.qty || 0) * (items[idx]?.unitCost || 0)).toFixed(2)}
+              </div>
+              <button type="button" onClick={() => remove(idx)} className="btn btn-danger btn-icon btn-sm" title="Remove item">
+                <Trash2 size={15} />
               </button>
             </div>
           ))}
-          <button
-            type="button"
-            onClick={() => append({ description: '', qty: 1, unitCost: 0 })}
-            className="flex items-center gap-2 text-[color:var(--color-primary)] font-medium hover:underline"
-          >
-            <Plus size={18} /> Add Item
+
+          <button type="button" onClick={() => append({ description: '', qty: 1, unitCost: 0 })}
+            className="btn btn-ghost btn-sm" style={{ alignSelf: 'flex-start', color: 'var(--primary)' }}>
+            <Plus size={15} /> Add Item
           </button>
         </div>
       </div>
 
-      <div className="bg-[color:var(--color-bg-default)] p-4 rounded-lg space-y-2">
-        <div className="flex justify-between text-[color:var(--color-text-primary)]">
-          <span>Subtotal:</span>
-          <span className="font-medium">{settings.currency} {subtotal.toFixed(2)}</span>
+      {/* Totals */}
+      <div className="totals-box">
+        <div className="total-row">
+          <span>Subtotal</span>
+          <span className="amount">{settings.currency} {subtotal.toFixed(2)}</span>
         </div>
-        <div className="flex justify-between text-[color:var(--color-text-primary)]">
-          <span>VAT ({settings.vatRate}%):</span>
-          <span className="font-medium">{settings.currency} {vat.toFixed(2)}</span>
+        <div className="total-row">
+          <span>VAT / NHIL ({settings.vatRate}%)</span>
+          <span className="amount">{settings.currency} {vat.toFixed(2)}</span>
         </div>
-        <div className="flex justify-between text-lg font-bold text-[color:var(--color-text-primary)] border-t border-[color:var(--color-border)] pt-2">
-          <span>Total:</span>
-          <span>{settings.currency} {total.toFixed(2)}</span>
+        <div className="total-row final">
+          <span>Total</span>
+          <span className="amount">{settings.currency} {total.toFixed(2)}</span>
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-[color:var(--color-text-primary)] mb-2">
-          Notes
-        </label>
-        <textarea
-          {...register('notes')}
-          placeholder="Additional notes or payment terms"
-          className="input-field min-h-24"
-        />
+      <div className="grid-2">
+        <div className="form-group">
+          <label className="form-label">Status</label>
+          <select {...register('status')} className="input-field">
+            <option value="Draft">Draft</option>
+            <option value="Sent">Sent</option>
+            <option value="Paid">Paid</option>
+            <option value="Overdue">Overdue</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label className="form-label">Notes</label>
+          <input {...register('notes')} type="text" className="input-field" placeholder="Optional note or payment terms" />
+        </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-[color:var(--color-text-primary)] mb-2">
-          Status
-        </label>
-        <select {...register('status')} className="input-field">
-          <option value="Draft">Draft</option>
-          <option value="Sent">Sent</option>
-          <option value="Paid">Paid</option>
-          <option value="Overdue">Overdue</option>
-        </select>
-      </div>
-
-      <div className="flex gap-3 pt-4">
-        <button type="submit" className="btn-primary flex-1">
+      <div style={{ display: 'flex', gap: 10 }}>
+        <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
           {invoice ? 'Update Invoice' : 'Create Invoice'}
         </button>
-        <button type="button" onClick={onClose} className="btn-ghost flex-1">
-          Cancel
-        </button>
+        <button type="button" onClick={onClose} className="btn btn-outline" style={{ flex: 1 }}>Cancel</button>
       </div>
     </form>
   );

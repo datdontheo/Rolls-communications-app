@@ -4,170 +4,173 @@ import Layout from '../components/Layout';
 import { useDataStore } from '../stores/dataStore';
 import { formatCurrency } from '../utils/formatting';
 import { eachMonthOfInterval, subMonths } from 'date-fns';
+import { TrendingUp, BarChart3 } from 'lucide-react';
 
-const COLORS = ['#1D9E75', '#BA7517', '#2D9F8F', '#D4891F', '#1AA369'];
+const COLORS = ['#1D9E75', '#BA7517', '#6366f1', '#0ea5e9', '#ec4899'];
 
 export default function ReportsPage() {
   const { invoices, income, expenses, jobs, settings } = useDataStore();
 
   const pnlData = useMemo(() => {
-    const last12Months = eachMonthOfInterval({
-      start: subMonths(new Date(), 11),
-      end: new Date(),
-    });
-
-    return last12Months.map((month) => {
-      const monthStart = new Date(month.getFullYear(), month.getMonth(), 1);
-      const monthEnd = new Date(month.getFullYear(), month.getMonth() + 1, 0);
-
-      const monthIncome = income
-        .filter((i) => {
-          const date = new Date(i.date);
-          return date >= monthStart && date <= monthEnd;
-        })
-        .reduce((sum, i) => sum + i.amount, 0);
-
-      const monthExpenses = expenses
-        .filter((e) => {
-          const date = new Date(e.date);
-          return date >= monthStart && date <= monthEnd;
-        })
-        .reduce((sum, e) => sum + e.amount, 0);
-
-      return {
-        month: month.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
-        Income: monthIncome,
-        Expenses: monthExpenses,
-        Profit: monthIncome - monthExpenses,
-      };
+    return eachMonthOfInterval({ start: subMonths(new Date(), 11), end: new Date() }).map(month => {
+      const s = new Date(month.getFullYear(), month.getMonth(), 1);
+      const e = new Date(month.getFullYear(), month.getMonth() + 1, 0);
+      const rev = income.filter(i => new Date(i.date) >= s && new Date(i.date) <= e).reduce((sum, i) => sum + i.amount, 0);
+      const exp = expenses.filter(ex => new Date(ex.date) >= s && new Date(ex.date) <= e).reduce((sum, e) => sum + e.amount, 0);
+      return { month: month.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }), Revenue: rev, Expenses: exp, Profit: rev - exp };
     });
   }, [income, expenses]);
 
-  const revenueByService = useMemo(() => {
-    const serviceData = income.reduce(
-      (acc, i) => {
-        const existing = acc.find((s) => s.name === i.serviceType);
-        if (existing) {
-          existing.value += i.amount;
-        } else {
-          acc.push({ name: i.serviceType, value: i.amount });
-        }
-        return acc;
-      },
-      [] as { name: string; value: number }[]
-    );
-    return serviceData;
+  const serviceData = useMemo(() => {
+    const map: Record<string, number> = {};
+    income.forEach(i => { map[i.serviceType] = (map[i.serviceType] || 0) + i.amount; });
+    return Object.entries(map).map(([name, value]) => ({ name, value }));
   }, [income]);
 
-  const receivablesAging = useMemo(() => {
+  const aging = useMemo(() => {
+    const buckets = { '0–30': 0, '31–60': 0, '61–90': 0, '90+': 0 };
     const now = new Date();
-    const overdue: { [key: string]: number } = {
-      '0-30': 0,
-      '31-60': 0,
-      '61-90': 0,
-      '90+': 0,
-    };
-
-    invoices
-      .filter((inv) => inv.status !== 'Paid')
-      .forEach((inv) => {
-        const dueDate = inv.dueDate ? new Date(inv.dueDate) : null;
-        if (!dueDate) return;
-
-        const daysOverdue = Math.floor((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
-
-        if (daysOverdue < 0) {
-          overdue['0-30'] += inv.total;
-        } else if (daysOverdue <= 30) {
-          overdue['0-30'] += inv.total;
-        } else if (daysOverdue <= 60) {
-          overdue['31-60'] += inv.total;
-        } else if (daysOverdue <= 90) {
-          overdue['61-90'] += inv.total;
-        } else {
-          overdue['90+'] += inv.total;
-        }
-      });
-
-    return Object.entries(overdue).map(([range, amount]) => ({
-      range,
-      amount,
-    }));
+    invoices.filter(inv => inv.status !== 'Paid').forEach(inv => {
+      if (!inv.dueDate) return;
+      const d = Math.floor((now.getTime() - new Date(inv.dueDate).getTime()) / 86400000);
+      if (d <= 30) buckets['0–30'] += inv.total;
+      else if (d <= 60) buckets['31–60'] += inv.total;
+      else if (d <= 90) buckets['61–90'] += inv.total;
+      else buckets['90+'] += inv.total;
+    });
+    return Object.entries(buckets).map(([range, amount]) => ({ range, amount }));
   }, [invoices]);
 
   const jobStats = useMemo(() => {
-    const completed = jobs.filter((j) => j.status === 'Completed').length;
-    const onTime = jobs.filter((j) => j.status === 'Completed' && new Date(j.deadline) >= new Date(j.updatedAt)).length;
-    const delayed = completed - onTime;
-
-    return [
-      { name: 'On Time', value: onTime },
-      { name: 'Delayed', value: delayed },
-    ];
+    const completed = jobs.filter(j => j.status === 'Completed').length;
+    const onTime = jobs.filter(j => j.status === 'Completed' && new Date(j.deadline) >= new Date(j.updatedAt)).length;
+    return [{ name: 'On Time', value: onTime }, { name: 'Delayed', value: completed - onTime }];
   }, [jobs]);
+
+  const totalRev = income.reduce((s, i) => s + i.amount, 0);
+  const totalExp = expenses.reduce((s, e) => s + e.amount, 0);
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold font-display text-[color:var(--color-text-primary)]">Reports</h2>
-
-        {/* P&L Summary */}
-        <div className="card">
-          <h3 className="text-lg font-bold font-display mb-4">Profit & Loss (Last 12 Months)</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={pnlData}>
-              <CartesianGrid stroke="var(--color-border)" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="Income" fill="var(--color-primary)" />
-              <Bar dataKey="Expenses" fill="var(--color-secondary)" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Revenue by Service */}
-          <div className="card">
-            <h3 className="text-lg font-bold font-display mb-4">Revenue by Service</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie data={revenueByService} cx="50%" cy="50%" labelLine={false} label={({ name, percent = 0 }) => `${name} ${(percent * 100).toFixed(0)}%`} outerRadius={100} fill="#8884d8" dataKey="value">
-                  {revenueByService.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
+      {/* KPIs */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 28 }}>
+        {[
+          { label: 'Total Revenue', value: formatCurrency(totalRev, settings.currency), color: '#16a34a' },
+          { label: 'Total Expenses', value: formatCurrency(totalExp, settings.currency), color: '#dc2626' },
+          { label: 'Net Profit', value: formatCurrency(totalRev - totalExp, settings.currency), color: totalRev - totalExp >= 0 ? 'var(--primary)' : '#dc2626' },
+          { label: 'Total Invoiced', value: formatCurrency(invoices.reduce((s, i) => s + i.total, 0), settings.currency), color: 'var(--text)' },
+        ].map(({ label, value, color }) => (
+          <div key={label} className="card" style={{ padding: '16px 20px' }}>
+            <p style={{ fontSize: 11.5, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>{label}</p>
+            <p style={{ fontSize: 20, fontWeight: 700, color, fontFamily: 'Fraunces, serif' }}>{value}</p>
           </div>
+        ))}
+      </div>
 
-          {/* Job Completion */}
-          <div className="card">
-            <h3 className="text-lg font-bold font-display mb-4">Job Completion Status</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie data={jobStats} cx="50%" cy="50%" labelLine={false} label={({ name, value = 0 }) => `${name}: ${value}`} outerRadius={100} fill="#8884d8" dataKey="value">
-                  {jobStats.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={index === 0 ? '#10b981' : '#ef4444'} />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
+      {/* P&L chart */}
+      <div className="card" style={{ marginBottom: 20 }}>
+        <div style={{ marginBottom: 20 }}>
+          <h3 style={{ fontSize: 15, fontWeight: 700 }}>Profit & Loss — Last 12 Months</h3>
+          <p style={{ fontSize: 12.5, color: 'var(--text-muted)', marginTop: 2 }}>Monthly revenue, expenses, and net profit</p>
         </div>
+        <ResponsiveContainer width="100%" height={280}>
+          <BarChart data={pnlData} barCategoryGap="25%">
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+            <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
+            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
+            <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, fontSize: 13 }} />
+            <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
+            <Bar dataKey="Revenue" fill="#1D9E75" radius={[3, 3, 0, 0]} />
+            <Bar dataKey="Expenses" fill="#BA7517" radius={[3, 3, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
 
-        {/* A/R Aging */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+        {/* Revenue by service */}
         <div className="card">
-          <h3 className="text-lg font-bold font-display mb-4">Accounts Receivable Aging</h3>
-          <div className="grid grid-cols-4 gap-4">
-            {receivablesAging.map((item) => (
-              <div key={item.range} className="bg-[color:var(--color-bg-default)] p-4 rounded-lg">
-                <p className="text-[color:var(--color-text-secondary)] text-sm mb-2">{item.range} days</p>
-                <p className="text-xl font-bold text-[color:var(--color-text-primary)]">{formatCurrency(item.amount, settings.currency)}</p>
+          <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Revenue by Service</h3>
+          <p style={{ fontSize: 12.5, color: 'var(--text-muted)', marginBottom: 16 }}>Income breakdown by service type</p>
+          {serviceData.length > 0 ? (
+            <>
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie data={serviceData} cx="50%" cy="50%" innerRadius={55} outerRadius={85} dataKey="value" paddingAngle={3}>
+                    {serviceData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                  </Pie>
+                  <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, fontSize: 13 }} formatter={(v: unknown) => [formatCurrency(Number(v), settings.currency)]} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
+                {serviceData.map((s, i) => (
+                  <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: COLORS[i % COLORS.length], flexShrink: 0 }} />
+                    <span style={{ flex: 1, color: 'var(--text-muted)' }}>{s.name}</span>
+                    <span style={{ fontWeight: 600 }}>{formatCurrency(s.value, settings.currency)}</span>
+                    <span style={{ color: 'var(--text-muted)' }}>({((s.value / totalRev) * 100).toFixed(0)}%)</span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </>
+          ) : (
+            <div className="empty-state" style={{ padding: '32px 0' }}>
+              <TrendingUp size={32} className="empty-state-icon" />
+              <p className="empty-state-body">No revenue data yet</p>
+            </div>
+          )}
+        </div>
+
+        {/* Job completion */}
+        <div className="card">
+          <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Job Completion Rate</h3>
+          <p style={{ fontSize: 12.5, color: 'var(--text-muted)', marginBottom: 16 }}>On-time vs delayed completed jobs</p>
+          {jobStats.some(s => s.value > 0) ? (
+            <>
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie data={jobStats} cx="50%" cy="50%" innerRadius={55} outerRadius={85} dataKey="value" paddingAngle={3}>
+                    <Cell fill="#22c55e" />
+                    <Cell fill="#ef4444" />
+                  </Pie>
+                  <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, fontSize: 13 }} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
+                {jobStats.map((s, i) => (
+                  <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: i === 0 ? '#22c55e' : '#ef4444', flexShrink: 0 }} />
+                    <span style={{ flex: 1, color: 'var(--text-muted)' }}>{s.name}</span>
+                    <span style={{ fontWeight: 600 }}>{s.value} jobs</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="empty-state" style={{ padding: '32px 0' }}>
+              <BarChart3 size={32} className="empty-state-icon" />
+              <p className="empty-state-body">No completed jobs yet</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* AR Aging */}
+      <div className="card">
+        <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Accounts Receivable Aging</h3>
+        <p style={{ fontSize: 12.5, color: 'var(--text-muted)', marginBottom: 20 }}>Outstanding invoice amounts by days overdue</p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+          {aging.map(({ range, amount }, i) => (
+            <div key={range} style={{
+              padding: '16px 18px',
+              borderRadius: 10,
+              background: 'var(--bg)',
+              border: '1px solid var(--border)',
+              borderTop: `3px solid ${i === 0 ? '#22c55e' : i === 1 ? '#eab308' : i === 2 ? '#f97316' : '#ef4444'}`,
+            }}>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 8 }}>{range} days</p>
+              <p style={{ fontSize: 20, fontWeight: 700, fontFamily: 'Fraunces, serif' }}>{formatCurrency(amount, settings.currency)}</p>
+            </div>
+          ))}
         </div>
       </div>
     </Layout>

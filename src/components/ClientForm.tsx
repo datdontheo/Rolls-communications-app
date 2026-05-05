@@ -16,113 +16,68 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-interface ClientFormProps {
-  clientId?: string | null;
-  onClose: () => void;
-}
-
-export default function ClientForm({ clientId, onClose }: ClientFormProps) {
+export default function ClientForm({ clientId, onClose }: { clientId?: string | null; onClose: () => void }) {
   const { addClient, updateClient, getClient } = useDataStore();
   const toast = useToast();
   const client = clientId ? getClient(clientId) : null;
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: client ? {
-      name: client.name,
-      company: client.company,
-      email: client.email,
-      phone: client.phone,
-      address: client.address,
-      category: client.category,
-      industry: client.industry,
-    } : {
-      category: 'Active',
-    },
+    defaultValues: client ?? { category: 'Active', name: '', company: '', email: '', phone: '', address: '' },
   });
 
   const onSubmit = (data: FormData) => {
-    if (client) {
-      updateClient(client.id, data);
-      toast.success('Client updated');
-    } else {
-      addClient(data);
-      toast.success('Client created');
-    }
+    if (client) { updateClient(client.id, data); toast.success('Client updated'); }
+    else { addClient(data); toast.success('Client created'); }
     onClose();
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-[color:var(--color-text-primary)] mb-2">
-            Name *
-          </label>
-          <input {...register('name')} className="input-field" />
-          {errors.name && <p className="text-xs text-red-600 mt-1">{errors.name.message}</p>}
+    <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div className="grid-2">
+        <div className="form-group">
+          <label className="form-label">Full Name *</label>
+          <input {...register('name')} className="input-field" placeholder="John Mensah" />
+          {errors.name && <p className="form-error">{errors.name.message}</p>}
         </div>
-
-        <div>
-          <label className="block text-sm font-medium text-[color:var(--color-text-primary)] mb-2">
-            Company *
-          </label>
-          <input {...register('company')} className="input-field" />
-          {errors.company && <p className="text-xs text-red-600 mt-1">{errors.company.message}</p>}
+        <div className="form-group">
+          <label className="form-label">Company *</label>
+          <input {...register('company')} className="input-field" placeholder="Company Ltd." />
+          {errors.company && <p className="form-error">{errors.company.message}</p>}
         </div>
-
-        <div>
-          <label className="block text-sm font-medium text-[color:var(--color-text-primary)] mb-2">
-            Email *
-          </label>
-          <input {...register('email')} type="email" className="input-field" />
-          {errors.email && <p className="text-xs text-red-600 mt-1">{errors.email.message}</p>}
+        <div className="form-group">
+          <label className="form-label">Email *</label>
+          <input {...register('email')} type="email" className="input-field" placeholder="john@company.com" />
+          {errors.email && <p className="form-error">{errors.email.message}</p>}
         </div>
-
-        <div>
-          <label className="block text-sm font-medium text-[color:var(--color-text-primary)] mb-2">
-            Phone *
-          </label>
-          <input {...register('phone')} className="input-field" />
-          {errors.phone && <p className="text-xs text-red-600 mt-1">{errors.phone.message}</p>}
+        <div className="form-group">
+          <label className="form-label">Phone *</label>
+          <input {...register('phone')} className="input-field" placeholder="020 000 0000" />
+          {errors.phone && <p className="form-error">{errors.phone.message}</p>}
         </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-[color:var(--color-text-primary)] mb-2">
-          Address *
-        </label>
-        <textarea {...register('address')} className="input-field min-h-20" />
-        {errors.address && <p className="text-xs text-red-600 mt-1">{errors.address.message}</p>}
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-[color:var(--color-text-primary)] mb-2">
-            Category *
-          </label>
+        <div className="form-group">
+          <label className="form-label">Category *</label>
           <select {...register('category')} className="input-field">
             <option value="Prospect">Prospect</option>
             <option value="Active">Active</option>
             <option value="Retained">Retained</option>
           </select>
         </div>
-
-        <div>
-          <label className="block text-sm font-medium text-[color:var(--color-text-primary)] mb-2">
-            Industry
-          </label>
-          <input {...register('industry')} className="input-field" />
+        <div className="form-group">
+          <label className="form-label">Industry</label>
+          <input {...register('industry')} className="input-field" placeholder="e.g. Banking, FMCG" />
         </div>
       </div>
-
-      <div className="flex gap-3 pt-4">
-        <button type="submit" className="btn-primary flex-1">
+      <div className="form-group">
+        <label className="form-label">Address *</label>
+        <textarea {...register('address')} className="input-field" placeholder="Physical address" style={{ minHeight: 72 }} />
+        {errors.address && <p className="form-error">{errors.address.message}</p>}
+      </div>
+      <div style={{ display: 'flex', gap: 10 }}>
+        <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
           {client ? 'Update Client' : 'Create Client'}
         </button>
-        <button type="button" onClick={onClose} className="btn-ghost flex-1">
-          Cancel
-        </button>
+        <button type="button" onClick={onClose} className="btn btn-outline" style={{ flex: 1 }}>Cancel</button>
       </div>
     </form>
   );

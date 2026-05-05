@@ -2,19 +2,15 @@ import type { ReactNode } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 
-interface LayoutProps {
-  children: ReactNode;
-}
+interface LayoutProps { children: ReactNode; }
 
 export default function Layout({ children }: LayoutProps) {
   return (
-    <div className="flex h-screen bg-[color:var(--color-bg-default)]">
+    <div className="app-shell">
       <Sidebar />
-      <div className="flex flex-col flex-1 overflow-hidden">
+      <div className="main-area">
         <Header />
-        <main className="flex-1 overflow-auto p-6">
-          {children}
-        </main>
+        <main className="page-content">{children}</main>
       </div>
     </div>
   );

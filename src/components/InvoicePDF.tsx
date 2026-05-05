@@ -1,251 +1,149 @@
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { useDataStore } from '../stores/dataStore';
-import { Download } from 'lucide-react';
+import { Download, FileText } from 'lucide-react';
 
 const styles = StyleSheet.create({
-  page: {
-    padding: 40,
-    fontFamily: 'Helvetica',
-    backgroundColor: '#FFFFFF',
-  },
-  header: {
-    marginBottom: 30,
-    textAlign: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#1D9E75',
-    paddingBottom: 15,
-  },
-  logo: {
-    width: 60,
-    height: 60,
-    marginBottom: 10,
-  },
-  companyName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1D9E75',
-    marginBottom: 5,
-  },
-  invoiceTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
-    marginTop: 10,
-    marginBottom: 5,
-  },
-  section: {
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
-    marginBottom: 8,
-  },
-  row: {
-    flexDirection: 'row',
-    marginBottom: 5,
-    fontSize: 11,
-  },
-  label: {
-    fontWeight: 'bold',
-    color: '#1A1A1A',
-    width: '30%',
-  },
-  value: {
-    color: '#6B6B6B',
-    flex: 1,
-  },
-  table: {
-    marginTop: 20,
-    marginBottom: 20,
-  },
-  tableHeader: {
-    flexDirection: 'row',
-    backgroundColor: '#1D9E75',
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-    fontSize: 11,
-    padding: 8,
-    marginBottom: 5,
-  },
-  tableRow: {
-    flexDirection: 'row',
-    fontSize: 10,
-    paddingTop: 5,
-    paddingBottom: 5,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E3DE',
-  },
-  tableCell: {
-    paddingHorizontal: 5,
-  },
-  totalsSection: {
-    marginTop: 20,
-    marginLeft: '60%',
-    fontSize: 11,
-  },
-  totalRow: {
-    flexDirection: 'row',
-    marginBottom: 8,
-    paddingBottom: 8,
-  },
-  totalLabel: {
-    width: '60%',
-    fontWeight: 'bold',
-  },
-  totalValue: {
-    textAlign: 'right',
-    fontWeight: 'bold',
-  },
-  grandTotal: {
-    flexDirection: 'row',
-    borderTopWidth: 2,
-    borderTopColor: '#1D9E75',
-    paddingTop: 8,
-    marginTop: 8,
-    fontSize: 12,
-  },
-  footer: {
-    marginTop: 40,
-    paddingTop: 15,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E3DE',
-    textAlign: 'center',
-    fontSize: 9,
-    color: '#6B6B6B',
-  },
+  page: { padding: 48, fontFamily: 'Helvetica', backgroundColor: '#FFFFFF', fontSize: 10 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 36, paddingBottom: 24, borderBottomWidth: 2, borderBottomColor: '#1D9E75' },
+  logoBox: { width: 48, height: 48, backgroundColor: '#1D9E75', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  logoText: { fontSize: 20, fontWeight: 'bold', color: '#FFFFFF', fontFamily: 'Helvetica-Bold' },
+  companyName: { fontSize: 16, fontWeight: 'bold', color: '#141414', fontFamily: 'Helvetica-Bold', marginBottom: 3 },
+  companyDetail: { fontSize: 9, color: '#71717a', lineHeight: 1.5 },
+  invoiceLabel: { fontSize: 22, fontWeight: 'bold', color: '#1D9E75', fontFamily: 'Helvetica-Bold', textAlign: 'right' },
+  invoiceNum: { fontSize: 11, color: '#71717a', textAlign: 'right', marginTop: 4 },
+  metaRow: { flexDirection: 'row', gap: 40, marginBottom: 28 },
+  metaBlock: { flex: 1 },
+  metaTitle: { fontSize: 9, fontWeight: 'bold', color: '#71717a', letterSpacing: 0.8, textTransform: 'uppercase', fontFamily: 'Helvetica-Bold', marginBottom: 6 },
+  metaValue: { fontSize: 11, color: '#141414', lineHeight: 1.5 },
+  tableHeader: { flexDirection: 'row', backgroundColor: '#f4f4f5', borderRadius: 6, padding: '8 12', marginBottom: 4 },
+  tableRow: { flexDirection: 'row', padding: '10 12', borderBottomWidth: 1, borderBottomColor: '#f4f4f5' },
+  colDesc: { flex: 1 },
+  colNum: { width: 60, textAlign: 'center' },
+  colAmt: { width: 80, textAlign: 'right' },
+  thText: { fontSize: 9, fontWeight: 'bold', color: '#71717a', fontFamily: 'Helvetica-Bold', textTransform: 'uppercase' },
+  tdText: { fontSize: 10, color: '#141414' },
+  tdMuted: { fontSize: 10, color: '#71717a' },
+  totals: { marginTop: 20, marginLeft: '55%' },
+  totalRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
+  totalLabel: { fontSize: 10, color: '#71717a' },
+  totalValue: { fontSize: 10, color: '#141414', fontFamily: 'Helvetica-Bold' },
+  grandRow: { flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 2, borderTopColor: '#1D9E75', paddingTop: 10, marginTop: 8 },
+  grandLabel: { fontSize: 13, fontFamily: 'Helvetica-Bold', color: '#141414' },
+  grandValue: { fontSize: 13, fontFamily: 'Helvetica-Bold', color: '#1D9E75' },
+  footer: { position: 'absolute', bottom: 36, left: 48, right: 48, borderTopWidth: 1, borderTopColor: '#e4e4e7', paddingTop: 14, flexDirection: 'row', justifyContent: 'space-between' },
+  footerText: { fontSize: 8, color: '#a1a1aa' },
 });
 
-interface InvoicePDFProps {
-  invoiceId: string;
-}
-
-function InvoicePDFDocument({ invoiceId }: InvoicePDFProps) {
+function PDFDoc({ invoiceId }: { invoiceId: string }) {
   const { getInvoice, settings } = useDataStore();
-  const invoice = getInvoice(invoiceId);
+  const inv = getInvoice(invoiceId);
+  if (!inv) return <Document><Page><Text>Not found</Text></Page></Document>;
 
-  if (!invoice) {
-    return <Document><Page><Text>Invoice not found</Text></Page></Document>;
-  }
-
-  const invoiceTypeLabel = {
-    proforma: 'Pro-forma Invoice',
-    final: 'Invoice',
-    receipt: 'Receipt',
-  }[invoice.type];
+  const typeLabel = { proforma: 'Pro-forma Invoice', final: 'Invoice', receipt: 'Receipt' }[inv.type];
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Header */}
         <View style={styles.header}>
-          {settings.logo && (
-            <Image
-              src={settings.logo}
-              style={styles.logo}
-            />
-          )}
-          <Text style={styles.companyName}>{settings.companyName}</Text>
-          <Text style={styles.invoiceTitle}>{invoiceTypeLabel}</Text>
-        </View>
-
-        {/* Invoice Details */}
-        <View style={styles.section}>
-          <View style={styles.row}>
-            <Text style={styles.label}>Invoice #:</Text>
-            <Text style={styles.value}>{invoice.number}</Text>
+          <View>
+            {settings.logo
+              ? <Image src={settings.logo} style={{ width: 60, height: 60, objectFit: 'contain', marginBottom: 8 }} />
+              : <View style={styles.logoBox}><Text style={styles.logoText}>RC</Text></View>
+            }
+            <Text style={[styles.companyName, { marginTop: 8 }]}>{settings.companyName}</Text>
+            <Text style={styles.companyDetail}>{settings.poBox}</Text>
+            <Text style={styles.companyDetail}>{settings.phone.join(' · ')}</Text>
+            <Text style={styles.companyDetail}>{settings.emails[0]}</Text>
           </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Date:</Text>
-            <Text style={styles.value}>{new Date(invoice.date).toLocaleDateString()}</Text>
-          </View>
-          {invoice.dueDate && (
-            <View style={styles.row}>
-              <Text style={styles.label}>Due Date:</Text>
-              <Text style={styles.value}>{new Date(invoice.dueDate).toLocaleDateString()}</Text>
-            </View>
-          )}
-        </View>
-
-        {/* Bill To */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>BILL TO:</Text>
-          <View style={styles.row}>
-            <Text style={styles.value}>{invoice.clientName}</Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.value}>{invoice.clientAddress}</Text>
+          <View>
+            <Text style={styles.invoiceLabel}>{typeLabel.toUpperCase()}</Text>
+            <Text style={styles.invoiceNum}>{inv.number}</Text>
           </View>
         </View>
 
-        {/* Line Items Table */}
-        <View style={styles.table}>
-          <View style={styles.tableHeader}>
-            <Text style={{ ...styles.tableCell, width: '45%' }}>Description</Text>
-            <Text style={{ ...styles.tableCell, width: '15%', textAlign: 'center' }}>Qty</Text>
-            <Text style={{ ...styles.tableCell, width: '20%', textAlign: 'right' }}>Unit Cost</Text>
-            <Text style={{ ...styles.tableCell, width: '20%', textAlign: 'right' }}>Amount</Text>
+        {/* Meta */}
+        <View style={styles.metaRow}>
+          <View style={styles.metaBlock}>
+            <Text style={styles.metaTitle}>Billed To</Text>
+            <Text style={styles.metaValue}>{inv.clientName}</Text>
+            <Text style={[styles.metaValue, { color: '#71717a' }]}>{inv.clientAddress}</Text>
           </View>
-
-          {invoice.items.map((item, idx) => (
-            <View key={idx} style={styles.tableRow}>
-              <Text style={{ ...styles.tableCell, width: '45%' }}>{item.description}</Text>
-              <Text style={{ ...styles.tableCell, width: '15%', textAlign: 'center' }}>{item.qty}</Text>
-              <Text style={{ ...styles.tableCell, width: '20%', textAlign: 'right' }}>{settings.currency} {item.unitCost.toFixed(2)}</Text>
-              <Text style={{ ...styles.tableCell, width: '20%', textAlign: 'right' }}>{settings.currency} {(item.qty * item.unitCost).toFixed(2)}</Text>
-            </View>
-          ))}
+          <View style={styles.metaBlock}>
+            <Text style={styles.metaTitle}>Invoice Details</Text>
+            <Text style={styles.metaValue}>Date: {new Date(inv.date).toLocaleDateString('en-GH')}</Text>
+            {inv.dueDate && <Text style={styles.metaValue}>Due: {new Date(inv.dueDate).toLocaleDateString('en-GH')}</Text>}
+            <Text style={styles.metaValue}>Status: {inv.status}</Text>
+          </View>
         </View>
+
+        {/* Table */}
+        <View style={styles.tableHeader}>
+          <Text style={[styles.thText, styles.colDesc]}>Description</Text>
+          <Text style={[styles.thText, styles.colNum]}>Qty</Text>
+          <Text style={[styles.thText, styles.colAmt]}>Unit Cost</Text>
+          <Text style={[styles.thText, styles.colAmt]}>Amount</Text>
+        </View>
+        {inv.items.map((item, i) => (
+          <View key={i} style={styles.tableRow}>
+            <Text style={[styles.tdText, styles.colDesc]}>{item.description}</Text>
+            <Text style={[styles.tdMuted, styles.colNum]}>{item.qty}</Text>
+            <Text style={[styles.tdMuted, styles.colAmt]}>{settings.currency} {item.unitCost.toFixed(2)}</Text>
+            <Text style={[styles.tdText, styles.colAmt]}>{settings.currency} {(item.qty * item.unitCost).toFixed(2)}</Text>
+          </View>
+        ))}
 
         {/* Totals */}
-        <View style={styles.totalsSection}>
+        <View style={styles.totals}>
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Subtotal:</Text>
-            <Text style={styles.totalValue}>{settings.currency} {invoice.subtotal.toFixed(2)}</Text>
+            <Text style={styles.totalLabel}>Subtotal</Text>
+            <Text style={styles.totalValue}>{settings.currency} {inv.subtotal.toFixed(2)}</Text>
           </View>
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>VAT/NHIL 20%:</Text>
-            <Text style={styles.totalValue}>{settings.currency} {invoice.vat.toFixed(2)}</Text>
+            <Text style={styles.totalLabel}>VAT / NHIL (20%)</Text>
+            <Text style={styles.totalValue}>{settings.currency} {inv.vat.toFixed(2)}</Text>
           </View>
-          <View style={styles.grandTotal}>
-            <Text style={styles.totalLabel}>TOTAL:</Text>
-            <Text style={styles.totalValue}>{settings.currency} {invoice.total.toFixed(2)}</Text>
+          <View style={styles.grandRow}>
+            <Text style={styles.grandLabel}>TOTAL DUE</Text>
+            <Text style={styles.grandValue}>{settings.currency} {inv.total.toFixed(2)}</Text>
           </View>
         </View>
 
         {/* Footer */}
-        <View style={styles.footer}>
-          <Text>{settings.companyName} | P.O. Box {settings.poBox}</Text>
-          <Text>Tel: {settings.phone.join(' | ')} | Email: {settings.emails[0]}</Text>
-          <Text>Website: {settings.website}</Text>
+        <View style={styles.footer} fixed>
+          <Text style={styles.footerText}>{settings.website}</Text>
+          <Text style={styles.footerText}>{settings.companyName} · {settings.poBox}</Text>
+          <Text style={styles.footerText}>{settings.phone[0]}</Text>
         </View>
       </Page>
     </Document>
   );
 }
 
-export default function InvoicePDF({ invoiceId }: InvoicePDFProps) {
+export default function InvoicePDF({ invoiceId }: { invoiceId: string }) {
   const { getInvoice } = useDataStore();
-  const invoice = getInvoice(invoiceId);
-
-  if (!invoice) return <div>Invoice not found</div>;
+  const inv = getInvoice(invoiceId);
+  if (!inv) return <p style={{ color: 'var(--text-muted)' }}>Invoice not found</p>;
 
   return (
-    <div className="space-y-4">
-      <PDFDownloadLink
-        document={<InvoicePDFDocument invoiceId={invoiceId} />}
-        fileName={`${invoice.number}.pdf`}
-        className="inline-flex items-center gap-2 btn-primary"
-      >
-        {({ loading }) => (
-          <>
-            <Download size={18} />
-            {loading ? 'Generating PDF...' : 'Download PDF'}
-          </>
-        )}
-      </PDFDownloadLink>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ padding: '16px 20px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 10 }}>
+        <div style={{ display: 'flex', gap: 12, marginBottom: 12, alignItems: 'center' }}>
+          <FileText size={18} style={{ color: 'var(--primary)' }} />
+          <span style={{ fontWeight: 600 }}>{inv.number}</span>
+          <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>· {inv.clientName} · {inv.status}</span>
+        </div>
+        <PDFDownloadLink
+          document={<PDFDoc invoiceId={invoiceId} />}
+          fileName={`${inv.number}.pdf`}
+          className="btn btn-primary"
+        >
+          {({ loading }) => (
+            <><Download size={16} /> {loading ? 'Generating…' : 'Download PDF'}</>
+          )}
+        </PDFDownloadLink>
+      </div>
     </div>
   );
 }

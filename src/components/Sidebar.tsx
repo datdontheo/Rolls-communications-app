@@ -1,20 +1,24 @@
 import { Link, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard,
-  FileText,
-  Briefcase,
-  Users,
-  TrendingUp,
-  Box,
-  Settings,
-  LogOut,
-  Menu,
-  X,
+  LayoutDashboard, FileText, Briefcase, Users,
+  TrendingUp, Package, BarChart3, Settings,
+  LogOut, Menu, X, Sun, Moon, Receipt,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { useThemeStore } from '../stores/themeStore';
-import { Moon, Sun } from 'lucide-react';
+
+const navItems = [
+  { path: '/', icon: LayoutDashboard, label: 'Dashboard', section: 'main' },
+  { path: '/invoices', icon: Receipt, label: 'Invoices', section: 'main' },
+  { path: '/quotations', icon: FileText, label: 'Quotations', section: 'main' },
+  { path: '/jobs', icon: Briefcase, label: 'Jobs', section: 'main' },
+  { path: '/clients', icon: Users, label: 'Clients', section: 'main' },
+  { path: '/financials', icon: TrendingUp, label: 'Financials', section: 'ops' },
+  { path: '/inventory', icon: Package, label: 'Inventory', section: 'ops' },
+  { path: '/reports', icon: BarChart3, label: 'Reports', section: 'ops' },
+  { path: '/settings', icon: Settings, label: 'Settings', section: 'system' },
+];
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,87 +26,126 @@ export default function Sidebar() {
   const { logout } = useAuthStore();
   const { isDark, toggle } = useThemeStore();
 
-  const navItems = [
-    { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/invoices', icon: FileText, label: 'Invoices' },
-    { path: '/quotations', icon: FileText, label: 'Quotations' },
-    { path: '/jobs', icon: Briefcase, label: 'Jobs' },
-    { path: '/clients', icon: Users, label: 'Clients' },
-    { path: '/financials', icon: TrendingUp, label: 'Financials' },
-    { path: '/inventory', icon: Box, label: 'Inventory' },
-    { path: '/reports', icon: FileText, label: 'Reports' },
-    { path: '/settings', icon: Settings, label: 'Settings' },
-  ];
+  function handleLogout() {
+    logout();
+    window.location.href = '/login';
+  }
 
-  const isActive = (path: string) => {
-    return location.pathname === path ? 'bg-[color:var(--color-primary)] text-white' : 'text-[color:var(--color-text-sidebar)] hover:bg-opacity-20 hover:bg-white';
-  };
+  const mainNav = navItems.filter(n => n.section === 'main');
+  const opsNav = navItems.filter(n => n.section === 'ops');
+  const systemNav = navItems.filter(n => n.section === 'system');
+
+  function isActive(path: string) {
+    return location.pathname === path;
+  }
 
   return (
     <>
-      {/* Mobile menu button */}
+      {/* Mobile toggle */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-4 left-4 z-50 md:hidden bg-[color:var(--color-bg-sidebar)] p-2 rounded-lg text-[color:var(--color-text-sidebar)]"
+        className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-[#141414] text-white shadow-lg md:hidden"
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       >
-        {isOpen ? <X size={24} /> : <Menu size={24} />}
+        {isOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
+
+      {/* Overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-30 md:hidden"
+          style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
+          onClick={() => setIsOpen(false)}
+        />
+      )}
 
       {/* Sidebar */}
       <aside
-        className={`${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        } md:translate-x-0 fixed md:static w-64 h-screen bg-[color:var(--color-bg-sidebar)] text-[color:var(--color-text-sidebar)] transition-transform duration-300 ease-in-out z-40 flex flex-col border-r border-[color:var(--color-border)]`}
+        className="sidebar"
+        style={{
+          transform: isOpen ? 'translateX(0)' : undefined,
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          bottom: 0,
+          transition: 'transform 0.25s ease',
+        }}
       >
-        <div className="p-6 border-b border-[color:var(--color-border)]">
-          <h1 className="text-2xl font-bold font-display text-[color:var(--color-primary)]">
-            RC
-          </h1>
-          <p className="text-sm text-[color:var(--color-text-secondary)] mt-1">Rolls Communications</p>
+        {/* Desktop: static, Mobile: fixed overlay */}
+        <style>{`
+          @media (min-width: 768px) {
+            .sidebar { position: static !important; transform: translateX(0) !important; }
+          }
+          @media (max-width: 767px) {
+            .sidebar { transform: ${isOpen ? 'translateX(0)' : 'translateX(-100%)'} !important; }
+          }
+        `}</style>
+
+        {/* Logo */}
+        <div className="sidebar-logo">
+          <div className="sidebar-logo-mark">
+            <div className="sidebar-logo-icon">RC</div>
+            <div className="sidebar-logo-text">
+              <div className="brand">Rolls Comm.</div>
+              <div className="tagline">Business Portal</div>
+            </div>
+          </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-4">
-          {navItems.map((item) => (
+        {/* Navigation */}
+        <nav className="sidebar-nav">
+          <div className="nav-section-label">Workspace</div>
+          {mainNav.map(item => (
             <Link
               key={item.path}
               to={item.path}
               onClick={() => setIsOpen(false)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg mb-2 transition-all duration-200 ${isActive(item.path)}`}
+              className={`nav-item ${isActive(item.path) ? 'active' : ''}`}
             >
-              <item.icon size={20} />
-              <span className="font-medium">{item.label}</span>
+              <item.icon className="nav-icon" />
+              {item.label}
+            </Link>
+          ))}
+
+          <div className="nav-section-label" style={{ marginTop: 20 }}>Operations</div>
+          {opsNav.map(item => (
+            <Link
+              key={item.path}
+              to={item.path}
+              onClick={() => setIsOpen(false)}
+              className={`nav-item ${isActive(item.path) ? 'active' : ''}`}
+            >
+              <item.icon className="nav-icon" />
+              {item.label}
+            </Link>
+          ))}
+
+          <div className="nav-section-label" style={{ marginTop: 20 }}>System</div>
+          {systemNav.map(item => (
+            <Link
+              key={item.path}
+              to={item.path}
+              onClick={() => setIsOpen(false)}
+              className={`nav-item ${isActive(item.path) ? 'active' : ''}`}
+            >
+              <item.icon className="nav-icon" />
+              {item.label}
             </Link>
           ))}
         </nav>
 
-        <div className="p-4 border-t border-[color:var(--color-border)] space-y-3">
-          <button
-            onClick={toggle}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-[color:var(--color-text-sidebar)] hover:bg-opacity-20 hover:bg-white transition-all duration-200"
-          >
-            {isDark ? <Sun size={20} /> : <Moon size={20} />}
-            <span className="font-medium">{isDark ? 'Light' : 'Dark'} Mode</span>
+        {/* Footer actions */}
+        <div className="sidebar-footer">
+          <button onClick={toggle} className="nav-item" style={{ width: '100%' }}>
+            {isDark ? <Sun size={16} className="nav-icon" /> : <Moon size={16} className="nav-icon" />}
+            <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
           </button>
-          <button
-            onClick={() => {
-              logout();
-              window.location.href = '/login';
-            }}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-[color:var(--color-text-sidebar)] hover:bg-opacity-20 hover:bg-white transition-all duration-200"
-          >
-            <LogOut size={20} />
-            <span className="font-medium">Logout</span>
+          <button onClick={handleLogout} className="nav-item" style={{ width: '100%', color: '#ef4444' }}>
+            <LogOut size={16} className="nav-icon" style={{ color: '#ef4444' }} />
+            <span>Logout</span>
           </button>
         </div>
       </aside>
-
-      {/* Overlay for mobile */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
     </>
   );
 }

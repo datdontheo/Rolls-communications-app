@@ -1,212 +1,196 @@
 import { useState, useMemo } from 'react';
-import { Plus, Edit2, Trash2, AlertTriangle } from 'lucide-react';
+import { Plus, Edit2, Trash2, AlertTriangle, Package } from 'lucide-react';
 import Layout from '../components/Layout';
 import Modal from '../components/Modal';
 import { useDataStore } from '../stores/dataStore';
 import { formatCurrency } from '../utils/formatting';
 import { useToast } from '../components/Toast';
+import type { StockItem } from '../types';
+
+type ItemForm = Omit<StockItem, 'id' | 'createdAt'>;
+const blankForm = (): ItemForm => ({
+  materialName: '', category: 'Paper', unit: '', currentStock: 0, reorderLevel: 0, unitCost: 0,
+});
 
 export default function InventoryPage() {
   const { stock, addStockItem, updateStockItem, deleteStockItem, settings } = useDataStore();
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    materialName: '',
-    category: 'Paper' as any,
-    unit: '',
-    currentStock: 0,
-    reorderLevel: 0,
-    unitCost: 0,
-  });
+  const [editId, setEditId] = useState<string | null>(null);
+  const [form, setForm] = useState<ItemForm>(blankForm());
+  const [catFilter, setCatFilter] = useState('');
   const toast = useToast();
 
-  const lowStockItems = useMemo(() => stock.filter(s => s.currentStock <= s.reorderLevel), [stock]);
+  const lowStock = useMemo(() => stock.filter(s => s.currentStock <= s.reorderLevel), [stock]);
+  const totalValue = useMemo(() => stock.reduce((s, i) => s + i.currentStock * i.unitCost, 0), [stock]);
+  const filtered = useMemo(() => stock.filter(s => !catFilter || s.category === catFilter), [stock, catFilter]);
+
+  const openAdd = () => { setEditId(null); setForm(blankForm()); setIsFormOpen(true); };
+  const openEdit = (item: StockItem) => { setEditId(item.id); setForm({ materialName: item.materialName, category: item.category, unit: item.unit, currentStock: item.currentStock, reorderLevel: item.reorderLevel, unitCost: item.unitCost }); setIsFormOpen(true); };
 
   const handleSave = () => {
-    if (!formData.materialName || !formData.unit) {
-      toast.error('Fill all fields');
-      return;
-    }
-
-    if (selectedId) {
-      updateStockItem(selectedId, formData);
-      toast.success('Stock item updated');
-    } else {
-      addStockItem(formData);
-      toast.success('Stock item added');
-    }
-
+    if (!form.materialName || !form.unit) { toast.error('Name and unit are required'); return; }
+    if (editId) { updateStockItem(editId, form); toast.success('Item updated'); }
+    else { addStockItem(form); toast.success('Item added'); }
     setIsFormOpen(false);
-    setSelectedId(null);
-    setFormData({ materialName: '', category: 'Paper', unit: '', currentStock: 0, reorderLevel: 0, unitCost: 0 });
-  };
-
-  const handleEdit = (item: any) => {
-    setFormData(item);
-    setSelectedId(item.id);
-    setIsFormOpen(true);
   };
 
   const handleDelete = (id: string) => {
-    if (confirm('Are you sure?')) {
-      deleteStockItem(id);
-      toast.success('Stock item deleted');
-    }
+    if (confirm('Delete this stock item?')) { deleteStockItem(id); toast.success('Item deleted'); }
   };
+
+  const categories = ['Paper', 'Vinyl', 'Ink', 'Metal', 'Substrate', 'Other'];
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold font-display text-[color:var(--color-text-primary)]">Inventory</h2>
-          <button onClick={() => { setSelectedId(null); setFormData({ materialName: '', category: 'Paper', unit: '', currentStock: 0, reorderLevel: 0, unitCost: 0 }); setIsFormOpen(true); }} className="btn-primary flex items-center gap-2">
-            <Plus size={20} />
-            Add Item
-          </button>
+      <div className="page-header">
+        <div>
+          <h2 className="page-title">Inventory</h2>
+          <p className="page-subtitle">{stock.length} items · Total value {formatCurrency(totalValue, settings.currency)}</p>
         </div>
+        <button onClick={openAdd} className="btn btn-primary"><Plus size={17} /> Add Item</button>
+      </div>
 
-        {lowStockItems.length > 0 && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-            <AlertTriangle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="font-medium text-red-900">{lowStockItems.length} items low on stock</p>
-              <p className="text-sm text-red-700 mt-1">{lowStockItems.map(s => s.materialName).join(', ')}</p>
-            </div>
+      {/* Low stock alert */}
+      {lowStock.length > 0 && (
+        <div className="alert alert-warning" style={{ marginBottom: 20 }}>
+          <AlertTriangle size={18} className="alert-icon" />
+          <div className="alert-content">
+            <p className="alert-title">{lowStock.length} item{lowStock.length > 1 ? 's' : ''} running low</p>
+            <p className="alert-body">{lowStock.map(s => s.materialName).join(', ')}</p>
           </div>
-        )}
+        </div>
+      )}
 
-        <div className="card overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="border-b border-[color:var(--color-border)]">
+      {/* Stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 24 }}>
+        <div className="card" style={{ padding: '14px 18px' }}>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 6 }}>Total Items</p>
+          <p style={{ fontSize: 24, fontWeight: 700, fontFamily: 'Fraunces, serif' }}>{stock.length}</p>
+        </div>
+        <div className="card" style={{ padding: '14px 18px' }}>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 6 }}>Low Stock</p>
+          <p style={{ fontSize: 24, fontWeight: 700, fontFamily: 'Fraunces, serif', color: lowStock.length > 0 ? '#dc2626' : 'inherit' }}>{lowStock.length}</p>
+        </div>
+        <div className="card" style={{ padding: '14px 18px' }}>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 6 }}>Inventory Value</p>
+          <p style={{ fontSize: 24, fontWeight: 700, fontFamily: 'Fraunces, serif', color: 'var(--primary)' }}>{formatCurrency(totalValue, settings.currency)}</p>
+        </div>
+      </div>
+
+      {/* Category filter */}
+      <div className="filter-bar">
+        {['', ...categories].map(c => (
+          <button key={c} className={`filter-btn ${catFilter === c ? 'active' : ''}`} onClick={() => setCatFilter(c)}>{c || 'All'}</button>
+        ))}
+      </div>
+
+      {/* Table */}
+      <div className="table-wrapper">
+        <div className="table-overflow">
+          <table className="data-table">
+            <thead>
               <tr>
-                <th className="text-left py-3 px-4 font-medium">Material</th>
-                <th className="text-left py-3 px-4 font-medium">Category</th>
-                <th className="text-left py-3 px-4 font-medium">Current Stock</th>
-                <th className="text-left py-3 px-4 font-medium">Reorder Level</th>
-                <th className="text-right py-3 px-4 font-medium">Unit Cost</th>
-                <th className="text-right py-3 px-4 font-medium">Total Value</th>
-                <th className="text-right py-3 px-4 font-medium">Actions</th>
+                <th>Material</th>
+                <th>Category</th>
+                <th className="text-right">Current Stock</th>
+                <th className="text-right">Reorder At</th>
+                <th>Status</th>
+                <th className="text-right">Unit Cost</th>
+                <th className="text-right">Total Value</th>
+                <th className="text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {stock.map((item) => (
-                <tr key={item.id} className={`table-row ${item.currentStock <= item.reorderLevel ? 'bg-red-50' : ''}`}>
-                  <td className="py-3 px-4 font-medium">{item.materialName}</td>
-                  <td className="py-3 px-4">{item.category}</td>
-                  <td className="py-3 px-4">
-                    {item.currentStock} {item.unit}
-                    {item.currentStock <= item.reorderLevel && <AlertTriangle size={14} className="inline ml-2 text-red-600" />}
-                  </td>
-                  <td className="py-3 px-4">{item.reorderLevel} {item.unit}</td>
-                  <td className="py-3 px-4 text-right">{formatCurrency(item.unitCost, settings.currency)}</td>
-                  <td className="py-3 px-4 text-right font-medium">{formatCurrency(item.currentStock * item.unitCost, settings.currency)}</td>
-                  <td className="py-3 px-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleEdit(item)}
-                        className="p-2 rounded-lg text-[color:var(--color-text-secondary)] hover:bg-[color:var(--color-bg-default)]"
-                      >
-                        <Edit2 size={18} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(item.id)}
-                        className="p-2 rounded-lg text-red-600 hover:bg-red-50"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {filtered.length > 0 ? filtered.map(item => {
+                const isLow = item.currentStock <= item.reorderLevel;
+                const pct = item.reorderLevel > 0 ? Math.min(100, (item.currentStock / (item.reorderLevel * 2)) * 100) : 100;
+                return (
+                  <tr key={item.id} style={isLow ? { background: 'rgba(220,38,38,0.03)' } : {}}>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <Package size={15} style={{ color: 'var(--primary)' }} />
+                        </div>
+                        <span style={{ fontWeight: 600 }}>{item.materialName}</span>
+                      </div>
+                    </td>
+                    <td><span style={{ fontSize: 12.5 }}>{item.category}</span></td>
+                    <td className="text-right">
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+                        <span style={{ fontWeight: 600 }}>{item.currentStock} {item.unit}</span>
+                        <div style={{ width: 80, height: 4, borderRadius: 2, background: 'var(--border)' }}>
+                          <div style={{ height: '100%', width: `${pct}%`, background: isLow ? '#ef4444' : 'var(--primary)', borderRadius: 2 }} />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="text-right" style={{ color: 'var(--text-muted)' }}>{item.reorderLevel} {item.unit}</td>
+                    <td>
+                      {isLow
+                        ? <span className="badge badge-overdue"><AlertTriangle size={11} style={{ marginRight: 2 }} />Low</span>
+                        : <span className="badge badge-paid">OK</span>
+                      }
+                    </td>
+                    <td className="text-right" style={{ color: 'var(--text-muted)' }}>{formatCurrency(item.unitCost, settings.currency)}</td>
+                    <td className="text-right"><span style={{ fontWeight: 700 }}>{formatCurrency(item.currentStock * item.unitCost, settings.currency)}</span></td>
+                    <td>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 4 }}>
+                        <button onClick={() => openEdit(item)} className="btn btn-ghost btn-icon btn-sm"><Edit2 size={16} /></button>
+                        <button onClick={() => handleDelete(item.id)} className="btn btn-danger btn-icon btn-sm"><Trash2 size={16} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              }) : (
+                <tr><td colSpan={8}>
+                  <div className="empty-state">
+                    <Package size={36} className="empty-state-icon" />
+                    <p className="empty-state-title">No items</p>
+                    <p className="empty-state-body">{catFilter ? 'No items in this category' : 'Add your first stock item'}</p>
+                  </div>
+                </td></tr>
+              )}
             </tbody>
           </table>
         </div>
+      </div>
 
-        <Modal isOpen={isFormOpen} title={selectedId ? 'Edit Stock Item' : 'Add Stock Item'} onClose={() => setIsFormOpen(false)}>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Material Name *</label>
-              <input
-                type="text"
-                value={formData.materialName}
-                onChange={(e) => setFormData({ ...formData, materialName: e.target.value })}
-                className="input-field"
-              />
+      {/* Item form modal */}
+      <Modal isOpen={isFormOpen} title={editId ? 'Edit Stock Item' : 'Add Stock Item'} onClose={() => setIsFormOpen(false)}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div className="grid-2">
+            <div className="form-group">
+              <label className="form-label">Material Name *</label>
+              <input type="text" className="input-field" placeholder="e.g. A4 Paper" value={form.materialName} onChange={e => setForm(f => ({ ...f, materialName: e.target.value }))} />
             </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Category *</label>
-                <select
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="input-field"
-                >
-                  <option value="Paper">Paper</option>
-                  <option value="Vinyl">Vinyl</option>
-                  <option value="Ink">Ink</option>
-                  <option value="Metal">Metal</option>
-                  <option value="Substrate">Substrate</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Unit *</label>
-                <input
-                  type="text"
-                  value={formData.unit}
-                  onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                  placeholder="e.g., kg, sheets, boxes"
-                  className="input-field"
-                />
-              </div>
+            <div className="form-group">
+              <label className="form-label">Category</label>
+              <select className="input-field" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value as any }))}>
+                {categories.map(c => <option key={c}>{c}</option>)}
+              </select>
             </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Current Stock</label>
-                <input
-                  type="number"
-                  value={formData.currentStock}
-                  onChange={(e) => setFormData({ ...formData, currentStock: parseFloat(e.target.value) })}
-                  className="input-field"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Reorder Level</label>
-                <input
-                  type="number"
-                  value={formData.reorderLevel}
-                  onChange={(e) => setFormData({ ...formData, reorderLevel: parseFloat(e.target.value) })}
-                  className="input-field"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Unit Cost</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={formData.unitCost}
-                  onChange={(e) => setFormData({ ...formData, unitCost: parseFloat(e.target.value) })}
-                  className="input-field"
-                />
-              </div>
+            <div className="form-group">
+              <label className="form-label">Unit *</label>
+              <input type="text" className="input-field" placeholder="e.g. sheets, kg, boxes" value={form.unit} onChange={e => setForm(f => ({ ...f, unit: e.target.value }))} />
             </div>
-
-            <div className="flex gap-3 pt-4">
-              <button onClick={handleSave} className="btn-primary flex-1">
-                {selectedId ? 'Update' : 'Add'} Item
-              </button>
-              <button onClick={() => setIsFormOpen(false)} className="btn-ghost flex-1">
-                Cancel
-              </button>
+            <div className="form-group">
+              <label className="form-label">Unit Cost ({settings.currency})</label>
+              <input type="number" step="0.01" className="input-field" placeholder="0.00" value={form.unitCost} onChange={e => setForm(f => ({ ...f, unitCost: parseFloat(e.target.value) || 0 }))} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Current Stock</label>
+              <input type="number" className="input-field" placeholder="0" value={form.currentStock} onChange={e => setForm(f => ({ ...f, currentStock: parseFloat(e.target.value) || 0 }))} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Reorder Level</label>
+              <input type="number" className="input-field" placeholder="0" value={form.reorderLevel} onChange={e => setForm(f => ({ ...f, reorderLevel: parseFloat(e.target.value) || 0 }))} />
             </div>
           </div>
-        </Modal>
-      </div>
+          <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+            <button onClick={handleSave} className="btn btn-primary" style={{ flex: 1 }}>{editId ? 'Update Item' : 'Add Item'}</button>
+            <button onClick={() => setIsFormOpen(false)} className="btn btn-outline" style={{ flex: 1 }}>Cancel</button>
+          </div>
+        </div>
+      </Modal>
     </Layout>
   );
 }
