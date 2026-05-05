@@ -3,21 +3,73 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-let realSupabase: any = null;
-let isConfigured = false;
+// ─── Case Conversion Utilities ────────────────────────────────────────────────
 
-if (supabaseUrl && supabaseAnonKey) {
-  try {
-    realSupabase = createClient(supabaseUrl, supabaseAnonKey);
-    isConfigured = true;
-  } catch {
-    console.warn('Failed to initialize Supabase, will use localStorage');
-  }
-}
+const snakeToCamel = (s: string) => s.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+const camelToSnake = (s: string) => s.replace(/([A-Z])/g, c => `_${c.toLowerCase()}`);
 
-// Fallback Supabase-like interface for localStorage
-const createSelectQuery = (table: string) => {
-  const promise = Promise.resolve().then(() => {
+const fromDb = (record: any): any => {
+  if (Array.isArray(record)) return record.map(fromDb);
+  if (record === null || typeof record !== 'object') return record;
+  return Object.entries(record).reduce((acc: any, [k, v]) => {
+    acc[snakeToCamel(k)] = fromDb(v);
+    return acc;
+  }, {});
+};
+
+const toDb = (record: any): any => {
+  if (Array.isArray(record)) return record.map(toDb);
+  if (record === null || typeof record !== 'object') return record;
+  return Object.entries(record).reduce((acc: any, [k, v]) => {
+    acc[camelToSnake(k)] = toDb(v);
+    return acc;
+  }, {});
+};
+
+// ─── Supabase wrapper (real) ──────────────────────────────────────────────────
+
+const wrapSupabase = (client: any) => ({
+  from: (table: string) => ({
+    select: (_query: string): SelectResult => {
+      const q = client.from(table).select(_query);
+      const p: any = q.then(({ data, error }: any) => ({
+        data: data ? fromDb(data) : null,
+        error,
+      }));
+      p.single = async () => {
+        const { data, error } = await q.single();
+        return { data: data ? fromDb(data) : null, error };
+      };
+      return p as SelectResult;
+    },
+    insert: async (record: any) => {
+      const { data, error } = await client.from(table).insert(toDb(record));
+      return { data, error };
+    },
+    update: (updates: any) => ({
+      eq: async (field: string, value: any) => {
+        const { data, error } = await client.from(table).update(toDb(updates)).eq(camelToSnake(field), value);
+        return { data, error };
+      },
+    }),
+    delete: () => ({
+      eq: async (field: string, value: any) => {
+        const { data, error } = await client.from(table).delete().eq(camelToSnake(field), value);
+        return { data, error };
+      },
+    }),
+  }),
+  auth: client.auth,
+});
+
+// ─── localStorage fallback ────────────────────────────────────────────────────
+
+type SelectResult = Promise<{ data: any; error: any }> & {
+  single: () => Promise<{ data: any; error: any }>;
+};
+
+const createSelectQuery = (table: string): SelectResult => {
+  const p: any = Promise.resolve().then(() => {
     try {
       const data = JSON.parse(localStorage.getItem(table) || '[]');
       return { data, error: null };
@@ -26,17 +78,16 @@ const createSelectQuery = (table: string) => {
     }
   });
 
-  return {
-    then: (onfulfilled?: any, onrejected?: any) => promise.then(onfulfilled, onrejected),
-    single: async () => {
-      try {
-        const data = JSON.parse(localStorage.getItem(table) || 'null');
-        return { data, error: null };
-      } catch (e) {
-        return { data: null, error: e };
-      }
+  p.single = async () => {
+    try {
+      const data = JSON.parse(localStorage.getItem(table) || 'null');
+      return { data, error: null };
+    } catch (e) {
+      return { data: null, error: e };
     }
   };
+
+  return p as SelectResult;
 };
 
 class LocalStorageClient {
@@ -82,13 +133,26 @@ class LocalStorageClient {
       }),
     };
   }
-  auth = {
-    getSession: async () => ({ data: null, error: null }),
-  };
+  auth = { getSession: async () => ({ data: null, error: null }) };
 }
 
-export const supabase = isConfigured ? realSupabase : new LocalStorageClient();
+// ─── Export ───────────────────────────────────────────────────────────────────
 
-export async function isSupabaseAvailable(): Promise<boolean> {
-  return isConfigured;
-}
+let isConfigured = false;
+
+const buildClient = () => {
+  if (supabaseUrl && supabaseAnonKey) {
+    try {
+      const raw = createClient(supabaseUrl, supabaseAnonKey);
+      isConfigured = true;
+      return wrapSupabase(raw);
+    } catch {
+      console.warn('Supabase init failed — using localStorage');
+    }
+  }
+  return new LocalStorageClient();
+};
+
+export const supabase = buildClient();
+
+export const isSupabaseAvailable = () => isConfigured;

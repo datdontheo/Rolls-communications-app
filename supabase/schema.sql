@@ -136,12 +136,12 @@ create index if not exists idx_jobs_status on jobs(status);
 create index if not exists idx_income_date on income_entries(date);
 create index if not exists idx_expense_date on expense_entries(date);
 
--- Enable row level security (optional but recommended)
-alter table clients enable row level security;
-alter table invoices enable row level security;
-alter table quotations enable row level security;
-alter table jobs enable row level security;
-alter table income_entries enable row level security;
-alter table expense_entries enable row level security;
-alter table stock_items enable row level security;
-alter table company_settings enable row level security;
+-- Disable row level security to allow anon key access
+alter table clients disable row level security;
+alter table invoices disable row level security;
+alter table quotations disable row level security;
+alter table jobs disable row level security;
+alter table income_entries disable row level security;
+alter table expense_entries disable row level security;
+alter table stock_items disable row level security;
+alter table company_settings disable row level security;
