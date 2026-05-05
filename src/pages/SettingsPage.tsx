@@ -17,8 +17,9 @@ export default function SettingsPage() {
     try {
       await updateSettings(form);
       toast.success('Settings saved');
-    } catch {
-      toast.error('Failed to save settings');
+    } catch (err) {
+      console.error('Settings save error:', err);
+      toast.error(`Failed to save settings: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
 
