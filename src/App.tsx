@@ -29,8 +29,12 @@ function App() {
 
   useEffect(() => {
     const init = async () => {
-      await initTheme();
-      await loadAllData();
+      try {
+        await initTheme();
+        await loadAllData();
+      } catch (err) {
+        console.error('App initialization error:', err);
+      }
     };
     init();
   }, [loadAllData]);
