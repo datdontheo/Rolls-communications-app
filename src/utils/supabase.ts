@@ -19,7 +19,7 @@ if (supabaseUrl && supabaseAnonKey) {
 class LocalStorageClient {
   from(table: string) {
     return {
-      select: (query: string) => ({
+      select: (_query: string) => ({
         single: async () => {
           try {
             const data = JSON.parse(localStorage.getItem(table) || 'null');
