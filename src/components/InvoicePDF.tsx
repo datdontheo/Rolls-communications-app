@@ -17,16 +17,16 @@ const styles = StyleSheet.create({
   metaLabel: { fontSize: 9, fontWeight: 'bold', color: '#666', letterSpacing: 0.5, textTransform: 'uppercase', fontFamily: 'Helvetica-Bold', marginBottom: 4 },
   metaValue: { fontSize: 11, color: '#000' },
   metaDots: { borderBottomWidth: 1, borderBottomColor: '#ccc', borderBottomStyle: 'dotted', marginBottom: 2 },
-  tableHeader: { flexDirection: 'row', borderTopWidth: 2, borderBottomWidth: 2, borderTopColor: '#000', borderBottomColor: '#000', paddingVertical: 8, marginTop: 16, marginBottom: 2 },
-  tableRow: { flexDirection: 'row', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: '#e0e0e0' },
+  tableHeader: { flexDirection: 'row', borderTopWidth: 2, borderBottomWidth: 2, borderTopColor: '#000', borderBottomColor: '#000', paddingVertical: 8, marginTop: 16, marginBottom: 2, gap: 8 },
+  tableRow: { flexDirection: 'row', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#ccc', gap: 8 },
   colItem: { width: '22%' },
   colQty: { width: '12%', textAlign: 'center' },
   colDesc: { flex: 1 },
   colCost: { width: '18%', textAlign: 'right' },
   colAmt: { width: '18%', textAlign: 'right' },
-  thText: { fontSize: 9, fontWeight: 'bold', color: '#000', fontFamily: 'Helvetica-Bold', textTransform: 'uppercase' },
+  thText: { fontSize: 10, fontWeight: 'bold', color: '#000', fontFamily: 'Helvetica-Bold', textTransform: 'uppercase', letterSpacing: 0.5 },
   tdText: { fontSize: 10, color: '#000' },
-  tdMuted: { fontSize: 10, color: '#666' },
+  tdMuted: { fontSize: 10, color: '#333' },
   totalsBox: { marginTop: 16, paddingVertical: 12, paddingHorizontal: 8, borderWidth: 1, borderColor: '#000' },
   totalRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4, fontSize: 10 },
   subtotalRow: { color: '#000' },
@@ -81,20 +81,20 @@ function PDFDoc({ invoiceId }: { invoiceId: string }) {
 
         {/* Table */}
         <View style={styles.tableHeader}>
-          <Text style={[styles.thText, styles.colItem]}>Item</Text>
-          <Text style={[styles.thText, styles.colQty]}>Qty</Text>
-          <Text style={[styles.thText, styles.colDesc]}>Description</Text>
-          <Text style={[styles.thText, styles.colCost]}>Unit Cost</Text>
-          <Text style={[styles.thText, styles.colAmt]}>Amount {settings.currency}</Text>
+          <Text style={[styles.thText, { width: '20%' }]}>Item</Text>
+          <Text style={[styles.thText, { width: '10%', textAlign: 'center' }]}>QNT</Text>
+          <Text style={[styles.thText, { flex: 1 }]}>Description</Text>
+          <Text style={[styles.thText, { width: '15%', textAlign: 'right' }]}>Unit Cost</Text>
+          <Text style={[styles.thText, { width: '18%', textAlign: 'right' }]}>Amount {settings.currency}</Text>
         </View>
 
         {inv.items.map((item, i) => (
           <View key={i} style={styles.tableRow}>
-            <Text style={[styles.tdText, styles.colItem]}>Item {i + 1}</Text>
-            <Text style={[styles.tdMuted, styles.colQty]}>{item.qty}</Text>
-            <Text style={[styles.tdText, styles.colDesc]}>{item.description}</Text>
-            <Text style={[styles.tdMuted, styles.colCost]}>{item.unitCost.toFixed(2)}</Text>
-            <Text style={[styles.tdText, styles.colAmt]}>{(item.qty * item.unitCost).toFixed(2)}</Text>
+            <Text style={[styles.tdText, { width: '20%' }]}>{item.description.split(' ').slice(0, 2).join(' ')}</Text>
+            <Text style={[styles.tdMuted, { width: '10%', textAlign: 'center' }]}>{item.qty}</Text>
+            <Text style={[styles.tdText, { flex: 1, fontSize: 9 }]}>{item.description}</Text>
+            <Text style={[styles.tdMuted, { width: '15%', textAlign: 'right' }]}>{item.unitCost.toFixed(2)}</Text>
+            <Text style={[styles.tdText, { width: '18%', textAlign: 'right' }]}>{(item.qty * item.unitCost).toFixed(2)}</Text>
           </View>
         ))}
 
@@ -105,15 +105,15 @@ function PDFDoc({ invoiceId }: { invoiceId: string }) {
         <View style={styles.totalsBox}>
           <View style={[styles.totalRow, styles.subtotalRow]}>
             <Text>SUBTOTAL</Text>
-            <Text>{inv.subtotal.toFixed(2)}</Text>
+            <Text>{settings.currency} {inv.subtotal.toFixed(2)}</Text>
           </View>
           <View style={[styles.totalRow, styles.vatRow]}>
-            <Text>VAT/NHIL 20 %</Text>
-            <Text>{inv.vat.toFixed(2)}</Text>
+            <Text>VAT/NHIL {inv.vatRate} %</Text>
+            <Text>{settings.currency} {inv.vat.toFixed(2)}</Text>
           </View>
           <View style={[styles.totalRow, styles.grandTotalRow]}>
             <Text>TOTAL</Text>
-            <Text>{inv.total.toFixed(2)}</Text>
+            <Text>{settings.currency} {inv.total.toFixed(2)}</Text>
           </View>
         </View>
 
