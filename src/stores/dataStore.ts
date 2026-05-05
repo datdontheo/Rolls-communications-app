@@ -131,7 +131,7 @@ export const useDataStore = create<DataState>((set, get) => ({
   clients: [],
   loadClients: async () => {
     try {
-      const { data, error } = await supabase.from('clients').select('*');
+      const { data, error } = await supabase.from('clients').select('*').run();
       if (error) throw error;
       set({ clients: data || [] });
     } catch (err) {
@@ -190,7 +190,7 @@ export const useDataStore = create<DataState>((set, get) => ({
   invoices: [],
   loadInvoices: async () => {
     try {
-      const { data, error } = await supabase.from('invoices').select('*');
+      const { data, error } = await supabase.from('invoices').select('*').run();
       if (error) throw error;
       set({ invoices: data || [] });
     } catch (err) {
@@ -257,7 +257,7 @@ export const useDataStore = create<DataState>((set, get) => ({
   quotations: [],
   loadQuotations: async () => {
     try {
-      const { data, error } = await supabase.from('quotations').select('*');
+      const { data, error } = await supabase.from('quotations').select('*').run();
       if (error) throw error;
       set({ quotations: data || [] });
     } catch (err) {
@@ -324,7 +324,7 @@ export const useDataStore = create<DataState>((set, get) => ({
   jobs: [],
   loadJobs: async () => {
     try {
-      const { data, error } = await supabase.from('jobs').select('*');
+      const { data, error } = await supabase.from('jobs').select('*').run();
       if (error) throw error;
       set({ jobs: data || [] });
     } catch (err) {
@@ -389,7 +389,7 @@ export const useDataStore = create<DataState>((set, get) => ({
   income: [],
   loadIncome: async () => {
     try {
-      const { data, error } = await supabase.from('income_entries').select('*');
+      const { data, error } = await supabase.from('income_entries').select('*').run();
       if (error) throw error;
       set({ income: data || [] });
     } catch (err) {
@@ -432,7 +432,7 @@ export const useDataStore = create<DataState>((set, get) => ({
   expenses: [],
   loadExpenses: async () => {
     try {
-      const { data, error } = await supabase.from('expense_entries').select('*');
+      const { data, error } = await supabase.from('expense_entries').select('*').run();
       if (error) throw error;
       set({ expenses: data || [] });
     } catch (err) {
@@ -475,7 +475,7 @@ export const useDataStore = create<DataState>((set, get) => ({
   stock: [],
   loadStock: async () => {
     try {
-      const { data, error } = await supabase.from('stock_items').select('*');
+      const { data, error } = await supabase.from('stock_items').select('*').run();
       if (error) throw error;
       set({ stock: data || [] });
     } catch (err) {

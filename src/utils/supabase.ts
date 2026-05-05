@@ -6,12 +6,22 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 // ─── Case Conversion ──────────────────────────────────────────────────────────
 
 const camelToSnake = (s: string) => s.replace(/([A-Z])/g, c => `_${c.toLowerCase()}`);
+const snakeToCamel = (s: string) => s.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
 
-const convertKeysToSnake = (obj: any): any => {
+export const convertKeysToSnake = (obj: any): any => {
   if (Array.isArray(obj)) return obj.map(convertKeysToSnake);
   if (obj === null || typeof obj !== 'object') return obj;
   return Object.entries(obj).reduce((acc: any, [k, v]) => {
     acc[camelToSnake(k)] = convertKeysToSnake(v);
+    return acc;
+  }, {});
+};
+
+export const convertKeysToCamel = (obj: any): any => {
+  if (Array.isArray(obj)) return obj.map(convertKeysToCamel);
+  if (obj === null || typeof obj !== 'object') return obj;
+  return Object.entries(obj).reduce((acc: any, [k, v]) => {
+    acc[snakeToCamel(k)] = convertKeysToCamel(v);
     return acc;
   }, {});
 };
@@ -43,13 +53,38 @@ const buildClient = () => {
 
 const baseSupabase = buildClient();
 
-// ─── Wrapper for case conversion on inserts/updates ────────────────────────────
+// ─── Helper to run a query and convert keys ───────────────────────────────────
+
+async function runSelect(q: any): Promise<{ data: any; error: any }> {
+  const { data, error } = await q;
+  return { data: convertKeysToCamel(data), error };
+}
+
+async function runSelectSingle(q: any): Promise<{ data: any; error: any }> {
+  const { data, error } = await q.single();
+  return { data: convertKeysToCamel(data), error };
+}
+
+// ─── Wrapper with full camelCase ↔ snake_case conversion ─────────────────────
 
 export const supabase = {
   from: (table: string) => {
     const base = baseSupabase.from(table);
     return {
-      select: (query: string) => base.select(query),
+      select: (query: string) => {
+        const q = base.select(query);
+        return {
+          run: () => runSelect(q),
+          single: () => runSelectSingle(q),
+          eq: (field: string, value: any) => {
+            const filtered = q.eq(camelToSnake(field), value);
+            return {
+              run: () => runSelect(filtered),
+              single: () => runSelectSingle(filtered),
+            };
+          },
+        };
+      },
       insert: (record: any) => base.insert(convertKeysToSnake(record)),
       update: (updates: any) => ({
         eq: (field: string, value: any) =>
