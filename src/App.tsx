@@ -11,7 +11,6 @@ import InvoicesPage from './pages/InvoicesPage';
 import JobsPage from './pages/JobsPage';
 import ClientsPage from './pages/ClientsPage';
 import FinancialsPage from './pages/FinancialsPage';
-import InventoryPage from './pages/InventoryPage';
 import ReportsPage from './pages/ReportsPage';
 import SettingsPage from './pages/SettingsPage';
 
@@ -108,14 +107,6 @@ function App() {
             element={
               <ProtectedRoute>
                 <FinancialsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/inventory"
-            element={
-              <ProtectedRoute>
-                <InventoryPage />
               </ProtectedRoute>
             }
           />

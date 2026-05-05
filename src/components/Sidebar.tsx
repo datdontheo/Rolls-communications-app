@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Briefcase, Users,
-  TrendingUp, Package, BarChart3, Settings,
+  TrendingUp, BarChart3, Settings,
   LogOut, Sun, Moon, Receipt, X,
 } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
@@ -14,7 +14,6 @@ const navItems = [
   { path: '/jobs', icon: Briefcase, label: 'Jobs', section: 'main' },
   { path: '/clients', icon: Users, label: 'Clients', section: 'main' },
   { path: '/financials', icon: TrendingUp, label: 'Financials', section: 'ops' },
-  { path: '/inventory', icon: Package, label: 'Inventory', section: 'ops' },
   { path: '/reports', icon: BarChart3, label: 'Reports', section: 'ops' },
   { path: '/settings', icon: Settings, label: 'Settings', section: 'system' },
 ];
