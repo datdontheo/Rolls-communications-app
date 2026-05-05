@@ -1,22 +1,23 @@
 import { create } from 'zustand';
 import type { User } from '../types';
+import { supabase } from '../utils/supabase';
 
 interface AuthState {
   user: User | null;
-  login: (username: string, password: string) => boolean;
+  login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
-  checkAuth: () => void;
-  changePassword: (oldPassword: string, newPassword: string) => boolean;
+  changePassword: (oldPassword: string, newPassword: string) => Promise<boolean>;
 }
+
+let adminPassword = 'rolls2024';
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
 
-  login: (username: string, password: string) => {
-    if (username === 'admin' && password === 'rolls2024') {
+  login: async (username: string, password: string) => {
+    if (username === 'admin' && password === adminPassword) {
       const user: User = { username: 'admin', authenticated: true };
       set({ user });
-      localStorage.setItem('user', JSON.stringify(user));
       return true;
     }
     return false;
@@ -24,25 +25,13 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: () => {
     set({ user: null });
-    localStorage.removeItem('user');
   },
 
-  checkAuth: () => {
-    const user = localStorage.getItem('user');
-    if (user) {
-      try {
-        set({ user: JSON.parse(user) });
-      } catch {
-        set({ user: null });
-      }
-    }
-  },
-
-  changePassword: (oldPassword: string, newPassword: string) => {
-    const stored = localStorage.getItem('adminPassword') || 'rolls2024';
-    if (oldPassword === stored) {
-      localStorage.setItem('adminPassword', newPassword);
-      return true;
+  changePassword: async (oldPassword: string, newPassword: string) => {
+    if (oldPassword === adminPassword) {
+      adminPassword = newPassword;
+      const { error } = await supabase.from('settings').update({ admin_password: newPassword }).eq('key', 'admin_password');
+      return !error;
     }
     return false;
   },

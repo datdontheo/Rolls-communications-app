@@ -62,80 +62,6 @@ const wrapSupabase = (client: any) => ({
   auth: client.auth,
 });
 
-// ─── localStorage fallback ────────────────────────────────────────────────────
-
-type SelectResult = Promise<{ data: any; error: any }> & {
-  single: () => Promise<{ data: any; error: any }>;
-};
-
-const createSelectQuery = (table: string): SelectResult => {
-  const p: any = Promise.resolve().then(() => {
-    try {
-      const data = JSON.parse(localStorage.getItem(table) || '[]');
-      return { data, error: null };
-    } catch (e) {
-      return { data: null, error: e };
-    }
-  });
-
-  p.single = async () => {
-    try {
-      const data = JSON.parse(localStorage.getItem(table) || 'null');
-      return { data, error: null };
-    } catch (e) {
-      return { data: null, error: e };
-    }
-  };
-
-  return p as SelectResult;
-};
-
-class LocalStorageClient {
-  from(table: string) {
-    return {
-      select: (_query: string) => createSelectQuery(table),
-      insert: async (record: any) => {
-        try {
-          const data = JSON.parse(localStorage.getItem(table) || '[]');
-          data.push(record);
-          localStorage.setItem(table, JSON.stringify(data));
-          return { data: [record], error: null };
-        } catch (e) {
-          return { data: null, error: e };
-        }
-      },
-      update: (updates: any) => ({
-        eq: async (field: string, value: any) => {
-          try {
-            const data = JSON.parse(localStorage.getItem(table) || '[]');
-            const index = data.findIndex((item: any) => item[field] === value);
-            if (index !== -1) {
-              data[index] = { ...data[index], ...updates };
-              localStorage.setItem(table, JSON.stringify(data));
-            }
-            return { data: null, error: null };
-          } catch (e) {
-            return { data: null, error: e };
-          }
-        },
-      }),
-      delete: () => ({
-        eq: async (field: string, value: any) => {
-          try {
-            let data = JSON.parse(localStorage.getItem(table) || '[]');
-            data = data.filter((item: any) => item[field] !== value);
-            localStorage.setItem(table, JSON.stringify(data));
-            return { data: null, error: null };
-          } catch (e) {
-            return { data: null, error: e };
-          }
-        },
-      }),
-    };
-  }
-  auth = { getSession: async () => ({ data: null, error: null }) };
-}
-
 // ─── Export ───────────────────────────────────────────────────────────────────
 
 let isConfigured = false;
@@ -146,11 +72,12 @@ const buildClient = () => {
       const raw = createClient(supabaseUrl, supabaseAnonKey);
       isConfigured = true;
       return wrapSupabase(raw);
-    } catch {
-      console.warn('Supabase init failed — using localStorage');
+    } catch (error) {
+      console.error('Supabase init failed:', error);
+      throw new Error('Supabase is required but not available. Please check your environment variables.');
     }
   }
-  return new LocalStorageClient();
+  throw new Error('Supabase credentials not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
 };
 
 export const supabase = buildClient();

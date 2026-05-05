@@ -25,14 +25,15 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
-  const { checkAuth } = useAuthStore();
   const { loadAllData } = useDataStore();
   const { initTheme } = useThemeStore();
 
   useEffect(() => {
-    checkAuth();
-    loadAllData();
-    initTheme();
+    const init = async () => {
+      await initTheme();
+      await loadAllData();
+    };
+    init();
   }, [loadAllData]);
 
   return (

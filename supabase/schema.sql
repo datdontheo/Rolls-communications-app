@@ -125,6 +125,14 @@ create table if not exists company_settings (
   updated_at timestamp with time zone default now()
 );
 
+-- User preferences table
+create table if not exists settings (
+  key text primary key,
+  theme_preference text default 'light',
+  admin_password text default 'rolls2024',
+  updated_at timestamp with time zone default now()
+);
+
 -- Create indexes for better query performance
 create index if not exists idx_invoices_client_id on invoices(client_id);
 create index if not exists idx_invoices_status on invoices(status);
@@ -145,3 +153,4 @@ alter table income_entries disable row level security;
 alter table expense_entries disable row level security;
 alter table stock_items disable row level security;
 alter table company_settings disable row level security;
+alter table settings disable row level security;

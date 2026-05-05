@@ -16,21 +16,24 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const toast = useToast();
 
-  useEffect(() => { initTheme(); }, []);
+  useEffect(() => {
+    initTheme();
+  }, [initTheme]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username || !password) { toast.error('Please fill in all fields'); return; }
     setLoading(true);
-    setTimeout(() => {
-      if (login(username, password)) {
+    try {
+      if (await login(username, password)) {
         toast.success('Welcome back!');
         navigate('/');
       } else {
         toast.error('Invalid username or password');
       }
+    } finally {
       setLoading(false);
-    }, 600);
+    }
   };
 
   return (
