@@ -18,8 +18,10 @@ export default function SettingsPage() {
       await updateSettings(form);
       toast.success('Settings saved');
     } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : err && typeof err === 'object' ? JSON.stringify(err) : String(err);
       console.error('Settings save error:', err);
-      toast.error(`Failed to save settings: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      console.error('Error details:', errorMsg);
+      toast.error(`Failed to save: ${errorMsg || 'Unknown error'}`);
     }
   };
 

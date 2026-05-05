@@ -115,7 +115,10 @@ export const useDataStore = create<DataState>((set, get) => ({
         .from('company_settings')
         .update(newSettings)
         .eq('id', 'settings');
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase update error:', error);
+        throw new Error(`Supabase error: ${error.message || JSON.stringify(error)}`);
+      }
       set((state) => ({ settings: { ...state.settings, ...newSettings } }));
     } catch (err) {
       console.error('Failed to update settings:', err);

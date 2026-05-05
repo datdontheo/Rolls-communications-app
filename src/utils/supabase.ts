@@ -6,16 +6,22 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 let isConfigured = false;
 
 const buildClient = () => {
+  console.log('Building Supabase client...');
+  console.log('VITE_SUPABASE_URL:', supabaseUrl ? 'SET' : 'NOT SET');
+  console.log('VITE_SUPABASE_ANON_KEY:', supabaseAnonKey ? 'SET' : 'NOT SET');
+
   if (supabaseUrl && supabaseAnonKey) {
     try {
       const client = createClient(supabaseUrl, supabaseAnonKey);
       isConfigured = true;
+      console.log('✓ Supabase client initialized successfully');
       return client;
     } catch (error) {
       console.error('Supabase init failed:', error);
       throw new Error('Supabase is required but not available. Please check your environment variables.');
     }
   }
+  console.error('Missing Supabase credentials');
   throw new Error('Supabase credentials not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
 };
 
