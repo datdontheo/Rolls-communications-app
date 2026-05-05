@@ -30,11 +30,11 @@ export default function SettingsPage() {
     reader.readAsDataURL(file);
   };
 
-  const handleChangePassword = () => {
+  const handleChangePassword = async () => {
     if (!pwForm.old || !pwForm.new || !pwForm.confirm) { toast.error('Fill in all fields'); return; }
     if (pwForm.new !== pwForm.confirm) { toast.error('Passwords do not match'); return; }
     if (pwForm.new.length < 6) { toast.error('Password must be at least 6 characters'); return; }
-    if (changePassword(pwForm.old, pwForm.new)) { toast.success('Password changed'); setPwForm({ old: '', new: '', confirm: '' }); }
+    if (await changePassword(pwForm.old, pwForm.new)) { toast.success('Password changed'); setPwForm({ old: '', new: '', confirm: '' }); }
     else { toast.error('Current password is incorrect'); }
   };
 

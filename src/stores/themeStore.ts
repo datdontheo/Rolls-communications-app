@@ -28,11 +28,18 @@ export const useThemeStore = create<ThemeState>((set) => ({
   },
 
   initTheme: async () => {
-    const { data, error } = await supabase.from('settings').select('theme_preference').eq('key', 'theme').single();
-    let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (!error && data?.theme_preference) {
-      isDark = data.theme_preference === 'dark';
+    try {
+      const { data, error } = await supabase.from('settings').select('theme_preference').eq('key', 'theme').single();
+      if (!error && data?.theme_preference) {
+        const isDark = data.theme_preference === 'dark';
+        set({ isDark });
+        applyTheme(isDark);
+        return;
+      }
+    } catch (err) {
+      console.warn('Failed to load theme preference from Supabase');
     }
+    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     set({ isDark });
     applyTheme(isDark);
   },
