@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, FileText, Briefcase, Users,
   TrendingUp, Package, BarChart3, Settings,
-  LogOut, Sun, Moon, Receipt,
+  LogOut, Sun, Moon, Receipt, X,
 } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { useThemeStore } from '../stores/themeStore';
@@ -75,7 +75,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
         `}</style>
 
         {/* Logo */}
-        <div className="sidebar-logo">
+        <div className="sidebar-logo" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div className="sidebar-logo-mark">
             <div className="sidebar-logo-icon">RC</div>
             <div className="sidebar-logo-text">
@@ -83,6 +83,29 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
               <div className="tagline">Business Portal</div>
             </div>
           </div>
+          {/* Close button visible on mobile only */}
+          <button
+            onClick={() => setIsOpen(false)}
+            className="md:hidden"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 32,
+              height: 32,
+              borderRadius: 6,
+              background: 'rgba(255,255,255,0.08)',
+              border: 'none',
+              color: 'var(--text-sidebar)',
+              cursor: 'pointer',
+              flexShrink: 0,
+              transition: 'background 0.15s',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.14)')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
+          >
+            <X size={18} strokeWidth={2.5} />
+          </button>
         </div>
 
         {/* Navigation */}
