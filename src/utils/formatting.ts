@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 
-export function formatCurrency(amount: number, currency: string = 'GH₵'): string {
+export function formatCurrency(amount: number, currency: string = 'GHS'): string {
   return `${currency} ${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 

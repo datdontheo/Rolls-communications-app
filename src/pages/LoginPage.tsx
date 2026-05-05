@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Moon, Sun, Lock, User, ArrowRight, Loader2 } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { useThemeStore } from '../stores/themeStore';
+import { useDataStore } from '../stores/dataStore';
 import { useToast } from '../components/Toast';
 
 export default function LoginPage() {
@@ -11,6 +12,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuthStore();
   const { isDark, toggle, initTheme } = useThemeStore();
+  const { settings } = useDataStore();
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -88,21 +90,35 @@ export default function LoginPage() {
       }}>
         {/* Logo area */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{
-            width: 64,
-            height: 64,
-            borderRadius: 18,
-            background: 'linear-gradient(135deg, var(--primary) 0%, #15805e 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 16px',
-            fontSize: 24,
-            fontWeight: 700,
-            fontFamily: 'Fraunces, serif',
-            color: 'white',
-            boxShadow: '0 8px 24px rgba(29,158,117,0.35)',
-          }}>RC</div>
+          {settings.logo ? (
+            <img
+              src={settings.logo}
+              alt="Rolls Communications"
+              style={{
+                maxHeight: 80,
+                maxWidth: 320,
+                objectFit: 'contain',
+                margin: '0 auto 16px',
+                display: 'block',
+              }}
+            />
+          ) : (
+            <div style={{
+              width: 64,
+              height: 64,
+              borderRadius: 18,
+              background: 'linear-gradient(135deg, var(--primary) 0%, #15805e 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px',
+              fontSize: 24,
+              fontWeight: 700,
+              fontFamily: 'Fraunces, serif',
+              color: 'white',
+              boxShadow: '0 8px 24px rgba(29,158,117,0.35)',
+            }}>RC</div>
+          )}
           <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--text)', marginBottom: 6 }}>
             Rolls Communications
           </h1>

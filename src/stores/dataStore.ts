@@ -78,7 +78,7 @@ const DEFAULT_SETTINGS: CompanySettings = {
   emails: ['tlaryea_rollscomm@live.com', 'akena_rollscomm@live.com'],
   website: 'www.rollscommunications.com.gh',
   vatRate: 20,
-  currency: 'GH₵',
+  currency: 'GHS',
   invoicePrefix: 'RC',
   monthlyRevenueTarget: 10000,
 };
