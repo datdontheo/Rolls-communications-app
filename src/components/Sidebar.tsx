@@ -44,10 +44,27 @@ export default function Sidebar() {
       {/* Mobile toggle */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-[#141414] text-white shadow-lg md:hidden"
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        className="md:hidden"
+        style={{
+          position: 'fixed',
+          top: 16,
+          left: 16,
+          zIndex: 50,
+          width: 40,
+          height: 40,
+          borderRadius: 10,
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border)',
+          color: 'var(--primary)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+          boxShadow: isOpen ? '0 8px 24px rgba(29, 158, 117, 0.15)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+        }}
       >
-        {isOpen ? <X size={20} /> : <Menu size={20} />}
+        {isOpen ? <X size={20} strokeWidth={2.5} /> : <Menu size={20} strokeWidth={2} />}
       </button>
 
       {/* Overlay */}
