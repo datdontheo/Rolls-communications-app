@@ -10,6 +10,10 @@ import type {
   CompanySettings,
 } from '../types';
 import { generateInvoiceNumber, generateJobId, generateQuoteNumber } from '../utils/generators';
+import {
+  SEED_CLIENTS, SEED_INVOICES, SEED_QUOTATIONS,
+  SEED_JOBS, SEED_INCOME, SEED_EXPENSES, SEED_STOCK,
+} from '../utils/seedData';
 
 interface DataState {
   // Company Settings
@@ -303,6 +307,20 @@ export const useDataStore = create<DataState>((set, get) => ({
       } catch (e) {
         console.error('Failed to load data from storage', e);
       }
+    } else {
+      // First launch — seed with demo data
+      const seeded = {
+        settings: DEFAULT_SETTINGS,
+        clients: SEED_CLIENTS,
+        invoices: SEED_INVOICES,
+        quotations: SEED_QUOTATIONS,
+        jobs: SEED_JOBS,
+        income: SEED_INCOME,
+        expenses: SEED_EXPENSES,
+        stock: SEED_STOCK,
+      };
+      set(seeded);
+      localStorage.setItem('rollsApp', JSON.stringify(seeded));
     }
   },
 
