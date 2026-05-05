@@ -33,6 +33,7 @@ export interface Invoice {
   dueDate?: string;
   items: LineItem[];
   subtotal: number;
+  vatRate: number;
   vat: number;
   total: number;
   status: 'Draft' | 'Sent' | 'Paid' | 'Overdue';
@@ -49,6 +50,7 @@ export interface Quotation {
   date: string;
   items: LineItem[];
   subtotal: number;
+  vatRate: number;
   vat: number;
   total: number;
   status: 'Pending' | 'Accepted' | 'Rejected';
