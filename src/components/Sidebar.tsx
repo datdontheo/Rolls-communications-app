@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { useThemeStore } from '../stores/themeStore';
+import { useDataStore } from '../stores/dataStore';
 
 const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Dashboard', section: 'main' },
@@ -28,6 +29,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
   const location = useLocation();
   const { logout } = useAuthStore();
   const { isDark, toggle } = useThemeStore();
+  const { settings } = useDataStore();
 
   function handleLogout() {
     logout();
@@ -75,13 +77,30 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
         `}</style>
 
         {/* Logo */}
-        <div className="sidebar-logo" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div className="sidebar-logo" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div className="sidebar-logo-mark">
-            <div className="sidebar-logo-icon">RC</div>
-            <div className="sidebar-logo-text">
-              <div className="brand">Rolls Comm.</div>
-              <div className="tagline">Business Portal</div>
-            </div>
+            {settings.logo ? (
+              <img
+                src={settings.logo}
+                alt="Rolls Communications"
+                style={{
+                  height: 40,
+                  maxWidth: 140,
+                  objectFit: 'contain',
+                  objectPosition: 'left center',
+                  filter: 'brightness(0) invert(1)',
+                  display: 'block',
+                }}
+              />
+            ) : (
+              <>
+                <div className="sidebar-logo-icon">RC</div>
+                <div className="sidebar-logo-text">
+                  <div className="brand">Rolls Comm.</div>
+                  <div className="tagline">Business Portal</div>
+                </div>
+              </>
+            )}
           </div>
           {/* Close button visible on mobile only */}
           <button

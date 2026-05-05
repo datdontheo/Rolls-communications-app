@@ -1,4 +1,4 @@
-import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { useDataStore } from '../stores/dataStore';
 import { Download, FileText } from 'lucide-react';
@@ -49,9 +49,10 @@ function PDFDoc({ invoiceId }: { invoiceId: string }) {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <View style={styles.logoBox}>
-              <Text style={styles.logoText}>RC</Text>
-            </View>
+            {settings.logo
+              ? <Image src={settings.logo} style={{ width: 80, height: 48, objectFit: 'contain', marginBottom: 8 }} />
+              : <View style={styles.logoBox}><Text style={styles.logoText}>RC</Text></View>
+            }
             <Text style={styles.companyName}>{settings.companyName}</Text>
             <Text style={styles.companyDetail}>{settings.address}</Text>
             <Text style={styles.companyDetail}>{settings.poBox}</Text>
