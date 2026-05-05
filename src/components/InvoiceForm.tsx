@@ -80,8 +80,15 @@ export default function InvoiceForm({ invoiceId, onClose }: { invoiceId?: string
       else { await addInvoice(payload as any); toast.success('Invoice created'); }
       onClose();
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err);
-      console.error('Invoice form error:', err);
+      const errorMsg = err instanceof Error
+        ? err.message
+        : err && typeof err === 'object' && 'message' in err
+        ? (err as any).message
+        : err && typeof err === 'object' && 'error' in err
+        ? (err as any).error
+        : String(err);
+      console.error('Invoice form error details:', err);
+      console.error('Error message:', errorMsg);
       toast.error(invoice ? `Failed to update invoice: ${errorMsg}` : `Failed to create invoice: ${errorMsg}`);
     }
   };
