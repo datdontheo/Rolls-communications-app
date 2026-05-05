@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './stores/authStore';
 import { useDataStore } from './stores/dataStore';
@@ -26,6 +26,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function App() {
   const { loadAllData } = useDataStore();
   const { initTheme } = useThemeStore();
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -37,12 +38,33 @@ function App() {
         console.log('App: Loading data...');
         await loadAllData();
         console.log('App: Data loaded');
+        setIsReady(true);
       } catch (err) {
         console.error('App initialization error:', err);
+        setIsReady(true); // Show app anyway
       }
     };
     init();
   }, [loadAllData]);
+
+  if (!isReady) {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        background: '#f5f5f5',
+        fontSize: 14,
+        color: '#666'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ marginBottom: 20 }}>Loading...</div>
+          <div style={{ fontSize: 12, color: '#999' }}>Check console (F12) for errors</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
