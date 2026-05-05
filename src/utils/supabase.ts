@@ -16,27 +16,33 @@ if (supabaseUrl && supabaseAnonKey) {
 }
 
 // Fallback Supabase-like interface for localStorage
+const createSelectQuery = (table: string) => {
+  const promise = Promise.resolve().then(() => {
+    try {
+      const data = JSON.parse(localStorage.getItem(table) || '[]');
+      return { data, error: null };
+    } catch (e) {
+      return { data: null, error: e };
+    }
+  });
+
+  return {
+    then: (onfulfilled?: any, onrejected?: any) => promise.then(onfulfilled, onrejected),
+    single: async () => {
+      try {
+        const data = JSON.parse(localStorage.getItem(table) || 'null');
+        return { data, error: null };
+      } catch (e) {
+        return { data: null, error: e };
+      }
+    }
+  };
+};
+
 class LocalStorageClient {
   from(table: string) {
     return {
-      select: (_query: string) => ({
-        single: async () => {
-          try {
-            const data = JSON.parse(localStorage.getItem(table) || 'null');
-            return { data, error: null };
-          } catch (e) {
-            return { data: null, error: e };
-          }
-        },
-        then: async function(callback: any) {
-          try {
-            const data = JSON.parse(localStorage.getItem(table) || '[]');
-            return callback({ data, error: null });
-          } catch (e) {
-            return callback({ data: null, error: e });
-          }
-        }
-      }),
+      select: (_query: string) => createSelectQuery(table),
       insert: async (record: any) => {
         try {
           const data = JSON.parse(localStorage.getItem(table) || '[]');
