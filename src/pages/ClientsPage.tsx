@@ -21,8 +21,8 @@ export default function ClientsPage() {
   const filtered = useMemo(() => clients.filter(c =>
     (!catFilter || c.category === catFilter) &&
     (!search || c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.email.toLowerCase().includes(search.toLowerCase()) ||
-      c.company.toLowerCase().includes(search.toLowerCase()))
+      (c.email ?? '').toLowerCase().includes(search.toLowerCase()) ||
+      (c.company ?? '').toLowerCase().includes(search.toLowerCase()))
   ), [clients, search, catFilter]);
 
   const handleDelete = async (id: string) => {
@@ -54,7 +54,7 @@ export default function ClientsPage() {
       </div>
 
       {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 24 }}>
+      <div className="stat-grid stat-grid-3">
         {['Active', 'Prospect', 'Retained'].map(cat => (
           <div key={cat} className="card" style={{ padding: '14px 18px', cursor: 'pointer', borderColor: catFilter === cat ? 'var(--primary)' : 'var(--border)' }}
             onClick={() => setCatFilter(catFilter === cat ? '' : cat)}>
@@ -88,11 +88,11 @@ export default function ClientsPage() {
             <thead>
               <tr>
                 <th>Client</th>
-                <th>Company</th>
+                <th className="hide-mobile">Company</th>
                 <th>Contact</th>
-                <th>Category</th>
-                <th className="text-right">Jobs</th>
-                <th className="text-right">Revenue</th>
+                <th className="hide-mobile">Category</th>
+                <th className="text-right hide-mobile">Jobs</th>
+                <th className="text-right hide-mobile">Revenue</th>
                 <th className="text-right">Actions</th>
               </tr>
             </thead>
@@ -112,20 +112,20 @@ export default function ClientsPage() {
                       <span style={{ fontWeight: 600, fontSize: 13.5 }}>{client.name}</span>
                     </div>
                   </td>
-                  <td style={{ color: 'var(--text-muted)' }}>{client.company || '—'}</td>
+                  <td className="hide-mobile" style={{ color: 'var(--text-muted)' }}>{client.company || '—'}</td>
                   <td>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12.5 }}>
+                      {client.email && <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12.5 }}>
                         <Mail size={12} style={{ color: 'var(--text-muted)' }} /> {client.email}
-                      </span>
+                      </span>}
                       <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12.5, color: 'var(--text-muted)' }}>
                         <Phone size={12} /> {client.phone}
                       </span>
                     </div>
                   </td>
-                  <td><CategoryBadge cat={client.category} /></td>
-                  <td className="text-right"><span style={{ fontWeight: 600 }}>{clientJobs(client.id)}</span></td>
-                  <td className="text-right"><span style={{ fontWeight: 600, color: 'var(--primary)' }}>GH₵ {clientRevenue(client.id).toLocaleString()}</span></td>
+                  <td className="hide-mobile">{client.category ? <CategoryBadge cat={client.category} /> : '—'}</td>
+                  <td className="text-right hide-mobile"><span style={{ fontWeight: 600 }}>{clientJobs(client.id)}</span></td>
+                  <td className="text-right hide-mobile"><span style={{ fontWeight: 600, color: 'var(--primary)' }}>GH₵ {clientRevenue(client.id).toLocaleString()}</span></td>
                   <td>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 4 }}>
                       <button onClick={() => { setEditId(client.id); setIsFormOpen(true); }} className="btn btn-ghost btn-icon btn-sm" title="Edit">

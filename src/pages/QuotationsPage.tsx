@@ -85,7 +85,7 @@ export default function QuotationsPage() {
       </div>
 
       {/* Summary */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 24 }}>
+      <div className="stat-grid stat-grid-3">
         {['Pending', 'Accepted', 'Rejected'].map(s => (
           <div key={s} className="card" style={{ padding: '14px 18px', cursor: 'pointer', borderColor: statusFilter === s ? 'var(--primary)' : 'var(--border)' }}
             onClick={() => setStatusFilter(statusFilter === s ? '' : s)}>
@@ -118,9 +118,9 @@ export default function QuotationsPage() {
               <tr>
                 <th>Quote #</th>
                 <th>Client</th>
-                <th>Date</th>
-                <th className="text-right">Subtotal</th>
-                <th className="text-right">Total (incl. VAT)</th>
+                <th className="hide-mobile">Date</th>
+                <th className="text-right hide-mobile">Subtotal</th>
+                <th className="text-right">Total</th>
                 <th>Status</th>
                 <th className="text-right">Actions</th>
               </tr>
@@ -130,8 +130,8 @@ export default function QuotationsPage() {
                 <tr key={q.id}>
                   <td><span style={{ fontWeight: 600, color: 'var(--primary)', fontSize: 13 }}>{q.number}</span></td>
                   <td><span style={{ fontWeight: 500 }}>{q.clientName}</span></td>
-                  <td style={{ color: 'var(--text-muted)' }}>{formatDate(q.date)}</td>
-                  <td className="text-right" style={{ color: 'var(--text-muted)' }}>{formatCurrency(q.subtotal, settings.currency)}</td>
+                  <td className="hide-mobile" style={{ color: 'var(--text-muted)' }}>{formatDate(q.date)}</td>
+                  <td className="text-right hide-mobile" style={{ color: 'var(--text-muted)' }}>{formatCurrency(q.subtotal, settings.currency)}</td>
                   <td className="text-right"><span style={{ fontWeight: 700 }}>{formatCurrency(q.total, settings.currency)}</span></td>
                   <td><StatusBadge status={q.status} /></td>
                   <td>

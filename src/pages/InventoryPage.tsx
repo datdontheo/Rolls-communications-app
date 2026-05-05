@@ -73,7 +73,7 @@ export default function InventoryPage() {
       )}
 
       {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 24 }}>
+      <div className="stat-grid stat-grid-3">
         <div className="card" style={{ padding: '14px 18px' }}>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 6 }}>Total Items</p>
           <p style={{ fontSize: 24, fontWeight: 700, fontFamily: 'Nexa, sans-serif' }}>{stock.length}</p>
@@ -102,12 +102,12 @@ export default function InventoryPage() {
             <thead>
               <tr>
                 <th>Material</th>
-                <th>Category</th>
-                <th className="text-right">Current Stock</th>
-                <th className="text-right">Reorder At</th>
+                <th className="hide-mobile">Category</th>
+                <th className="text-right">Stock</th>
+                <th className="text-right hide-mobile">Reorder At</th>
                 <th>Status</th>
-                <th className="text-right">Unit Cost</th>
-                <th className="text-right">Total Value</th>
+                <th className="text-right hide-mobile">Unit Cost</th>
+                <th className="text-right hide-mobile">Total Value</th>
                 <th className="text-right">Actions</th>
               </tr>
             </thead>
@@ -125,7 +125,7 @@ export default function InventoryPage() {
                         <span style={{ fontWeight: 600 }}>{item.materialName}</span>
                       </div>
                     </td>
-                    <td><span style={{ fontSize: 12.5 }}>{item.category}</span></td>
+                    <td className="hide-mobile"><span style={{ fontSize: 12.5 }}>{item.category}</span></td>
                     <td className="text-right">
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
                         <span style={{ fontWeight: 600 }}>{item.currentStock} {item.unit}</span>
@@ -134,15 +134,15 @@ export default function InventoryPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="text-right" style={{ color: 'var(--text-muted)' }}>{item.reorderLevel} {item.unit}</td>
+                    <td className="text-right hide-mobile" style={{ color: 'var(--text-muted)' }}>{item.reorderLevel} {item.unit}</td>
                     <td>
                       {isLow
                         ? <span className="badge badge-overdue"><AlertTriangle size={11} style={{ marginRight: 2 }} />Low</span>
                         : <span className="badge badge-paid">OK</span>
                       }
                     </td>
-                    <td className="text-right" style={{ color: 'var(--text-muted)' }}>{formatCurrency(item.unitCost, settings.currency)}</td>
-                    <td className="text-right"><span style={{ fontWeight: 700 }}>{formatCurrency(item.currentStock * item.unitCost, settings.currency)}</span></td>
+                    <td className="text-right hide-mobile" style={{ color: 'var(--text-muted)' }}>{formatCurrency(item.unitCost, settings.currency)}</td>
+                    <td className="text-right hide-mobile"><span style={{ fontWeight: 700 }}>{formatCurrency(item.currentStock * item.unitCost, settings.currency)}</span></td>
                     <td>
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 4 }}>
                         <button onClick={() => openEdit(item)} className="btn btn-ghost btn-icon btn-sm"><Edit2 size={16} /></button>

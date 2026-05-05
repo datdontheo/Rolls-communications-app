@@ -817,3 +817,36 @@ html.dark .data-table tbody tr:hover td { background: rgba(255,255,255,0.03); }
 /* Card table wrapper */
 .table-wrapper { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); }
 .table-overflow { overflow-x: auto; }
+
+/* ─── RESPONSIVE STAT GRIDS ──────────────────────────────────── */
+.stat-grid { display: grid; gap: 14px; margin-bottom: 24px; }
+.stat-grid-2 { grid-template-columns: repeat(2, 1fr); }
+.stat-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.stat-grid-4 { grid-template-columns: repeat(4, 1fr); }
+.stat-grid-5 { grid-template-columns: repeat(5, 1fr); }
+
+@media (max-width: 1024px) {
+  .stat-grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .stat-grid-5 { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .stat-grid-2 { grid-template-columns: 1fr 1fr; }
+  .stat-grid-3 { grid-template-columns: 1fr 1fr; }
+  .stat-grid-4, .stat-grid-5 { grid-template-columns: 1fr 1fr; }
+  /* Quick-entry forms on financials page */
+  .form-grid-6 { grid-template-columns: 1fr 1fr !important; }
+}
+
+@media (max-width: 480px) {
+  .stat-grid-2, .stat-grid-3, .stat-grid-4, .stat-grid-5 { grid-template-columns: 1fr; }
+  .form-grid-6 { grid-template-columns: 1fr !important; }
+}
+
+/* ─── MOBILE TABLE COLUMNS ───────────────────────────────────── */
+@media (max-width: 768px) {
+  .hide-mobile { display: none !important; }
+  .data-table td, .data-table th { padding: 10px 10px; font-size: 12.5px; }
+  .page-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .filter-bar { flex-wrap: wrap; }
+}

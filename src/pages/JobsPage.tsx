@@ -59,7 +59,7 @@ export default function JobsPage() {
       </div>
 
       {/* Pipeline summary */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, marginBottom: 24 }}>
+      <div className="stat-grid stat-grid-5" style={{ gap: 10 }}>
         {['New', 'In Progress', 'Under Review', 'Completed', 'Delivered'].map(s => {
           const count = jobs.filter(j => j.status === s).length;
           const key = s.toLowerCase().replace(/\s+/g, '-');
@@ -94,13 +94,13 @@ export default function JobsPage() {
           <table className="data-table">
             <thead>
               <tr>
-                <th>Job ID</th>
+                <th className="hide-mobile">Job ID</th>
                 <th>Client</th>
-                <th>Service</th>
+                <th className="hide-mobile">Service</th>
                 <th>Status</th>
-                <th>Assigned To</th>
-                <th>Deadline</th>
-                <th>Progress</th>
+                <th className="hide-mobile">Assigned To</th>
+                <th className="hide-mobile">Deadline</th>
+                <th className="hide-mobile">Progress</th>
                 <th className="text-right">Actions</th>
               </tr>
             </thead>
@@ -112,9 +112,9 @@ export default function JobsPage() {
 
                 return (
                   <tr key={job.id}>
-                    <td><span style={{ fontWeight: 600, color: 'var(--primary)', fontSize: 13, fontFamily: 'monospace' }}>{job.jobId}</span></td>
+                    <td className="hide-mobile"><span style={{ fontWeight: 600, color: 'var(--primary)', fontSize: 13, fontFamily: 'monospace' }}>{job.jobId}</span></td>
                     <td><span style={{ fontWeight: 500 }}>{job.clientName}</span></td>
-                    <td>
+                    <td className="hide-mobile">
                       <span style={{
                         padding: '2px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600,
                         background: `${SERVICE_COLORS[job.serviceType] || '#888'}18`,
@@ -124,14 +124,14 @@ export default function JobsPage() {
                       </span>
                     </td>
                     <td><StatusBadge status={job.status} /></td>
-                    <td style={{ color: 'var(--text-muted)' }}>{job.assignedTo}</td>
-                    <td style={{ color: isOverdue ? '#dc2626' : 'var(--text-muted)' }}>
+                    <td className="hide-mobile" style={{ color: 'var(--text-muted)' }}>{job.assignedTo || '—'}</td>
+                    <td className="hide-mobile" style={{ color: isOverdue ? '#dc2626' : 'var(--text-muted)' }}>
                       <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                         <Calendar size={13} />
-                        {formatDate(job.deadline)}
+                        {job.deadline ? formatDate(job.deadline) : '—'}
                       </span>
                     </td>
-                    <td>
+                    <td className="hide-mobile">
                       {job.stages.length > 0 ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           <div style={{ flex: 1, height: 6, borderRadius: 3, background: 'var(--border)', overflow: 'hidden', minWidth: 60 }}>

@@ -53,7 +53,7 @@ export default function ReportsPage() {
   return (
     <Layout>
       {/* KPIs */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 28 }}>
+      <div className="stat-grid stat-grid-4" style={{ marginBottom: 28 }}>
         {[
           { label: 'Total Revenue', value: formatCurrency(totalRev, settings.currency), color: '#16a34a' },
           { label: 'Total Expenses', value: formatCurrency(totalExp, settings.currency), color: '#dc2626' },
@@ -158,7 +158,7 @@ export default function ReportsPage() {
       <div className="card">
         <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Accounts Receivable Aging</h3>
         <p style={{ fontSize: 12.5, color: 'var(--text-muted)', marginBottom: 20 }}>Outstanding invoice amounts by days overdue</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+        <div className="stat-grid stat-grid-4" style={{ marginBottom: 0 }}>
           {aging.map(({ range, amount }, i) => (
             <div key={range} style={{
               padding: '16px 18px',

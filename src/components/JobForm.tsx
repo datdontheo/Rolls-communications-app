@@ -9,8 +9,8 @@ const schema = z.object({
   clientId: z.string().min(1, 'Client is required'),
   serviceType: z.enum(['Advertising', 'Printing', 'Fabrication', 'Design', 'Media']),
   status: z.enum(['New', 'In Progress', 'Under Review', 'Completed', 'Delivered']),
-  assignedTo: z.string().min(1, 'Assigned to is required'),
-  deadline: z.string().min(1, 'Deadline is required'),
+  assignedTo: z.string().optional(),
+  deadline: z.string().optional(),
   stages: z.array(z.object({ name: z.string().min(1, 'Stage name required') })),
   internalNotes: z.string().optional(),
 });
@@ -86,9 +86,8 @@ export default function JobForm({ jobId, onClose }: { jobId?: string | null; onC
           </select>
         </div>
         <div className="form-group">
-          <label className="form-label">Assigned To *</label>
+          <label className="form-label">Assigned To</label>
           <input {...register('assignedTo')} className="input-field" placeholder="Staff member name" />
-          {errors.assignedTo && <p className="form-error">{errors.assignedTo.message}</p>}
         </div>
         <div className="form-group">
           <label className="form-label">Deadline</label>

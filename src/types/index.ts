@@ -6,11 +6,11 @@ export interface User {
 export interface Client {
   id: string;
   name: string;
-  company: string;
   phone: string;
-  email: string;
-  address: string;
-  category: 'Prospect' | 'Active' | 'Retained';
+  company?: string;
+  email?: string;
+  address?: string;
+  category?: 'Prospect' | 'Active' | 'Retained';
   industry?: string;
   createdAt: string;
 }

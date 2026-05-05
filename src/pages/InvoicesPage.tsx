@@ -52,7 +52,7 @@ export default function InvoicesPage() {
   return (
     <Layout>
       {/* Summary row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 24 }}>
+      <div className="stat-grid stat-grid-3">
         {[
           { label: 'Total Invoiced', value: formatCurrency(totals.all, settings.currency), color: 'var(--text)' },
           { label: 'Total Paid', value: formatCurrency(totals.paid, settings.currency), color: '#16a34a' },
@@ -97,10 +97,10 @@ export default function InvoicesPage() {
             <thead>
               <tr>
                 <th>Invoice #</th>
-                <th>Type</th>
+                <th className="hide-mobile">Type</th>
                 <th>Client</th>
-                <th>Date</th>
-                <th>Due Date</th>
+                <th className="hide-mobile">Date</th>
+                <th className="hide-mobile">Due Date</th>
                 <th className="text-right">Amount</th>
                 <th>Status</th>
                 <th className="text-right">Actions</th>
@@ -110,10 +110,10 @@ export default function InvoicesPage() {
               {filtered.length > 0 ? filtered.map(inv => (
                 <tr key={inv.id}>
                   <td><span style={{ fontWeight: 600, color: 'var(--primary)', fontSize: 13 }}>{inv.number}</span></td>
-                  <td><span style={{ fontSize: 12.5, color: 'var(--text-muted)', textTransform: 'capitalize' }}>{inv.type}</span></td>
+                  <td className="hide-mobile"><span style={{ fontSize: 12.5, color: 'var(--text-muted)', textTransform: 'capitalize' }}>{inv.type}</span></td>
                   <td><span style={{ fontWeight: 500 }}>{inv.clientName}</span></td>
-                  <td style={{ color: 'var(--text-muted)' }}>{formatDate(inv.date)}</td>
-                  <td style={{ color: inv.status === 'Overdue' ? '#dc2626' : 'var(--text-muted)' }}>
+                  <td className="hide-mobile" style={{ color: 'var(--text-muted)' }}>{formatDate(inv.date)}</td>
+                  <td className="hide-mobile" style={{ color: inv.status === 'Overdue' ? '#dc2626' : 'var(--text-muted)' }}>
                     {inv.dueDate ? formatDate(inv.dueDate) : '—'}
                   </td>
                   <td className="text-right"><span style={{ fontWeight: 700 }}>{formatCurrency(inv.total, settings.currency)}</span></td>

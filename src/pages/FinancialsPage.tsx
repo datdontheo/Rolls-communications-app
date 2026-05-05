@@ -48,7 +48,7 @@ export default function FinancialsPage() {
   return (
     <Layout>
       {/* KPI strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 14, marginBottom: 28 }}>
+      <div className="stat-grid stat-grid-5" style={{ marginBottom: 28 }}>
         <div className="stat-card" style={{ gridColumn: 'span 2' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
@@ -94,7 +94,7 @@ export default function FinancialsPage() {
           {/* Add income form */}
           <div className="card">
             <p style={{ fontSize: 14, fontWeight: 700, marginBottom: 14, color: 'var(--text)' }}>Add Income Entry</p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 10, alignItems: 'end' }}>
+            <div className="form-grid-6" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 10, alignItems: 'end' }}>
               <div className="form-group">
                 <label className="form-label">Date</label>
                 <input type="date" className="input-field" value={incForm.date} onChange={e => setIncForm(f => ({ ...f, date: e.target.value }))} />
@@ -127,14 +127,14 @@ export default function FinancialsPage() {
             <div className="table-overflow">
               <table className="data-table">
                 <thead>
-                  <tr><th>Date</th><th>Service</th><th>Client</th><th>Description</th><th className="text-right">Amount</th><th className="text-right">Action</th></tr>
+                  <tr><th className="hide-mobile">Date</th><th className="hide-mobile">Service</th><th className="hide-mobile">Client</th><th>Description</th><th className="text-right">Amount</th><th className="text-right">Action</th></tr>
                 </thead>
                 <tbody>
                   {income.length > 0 ? income.slice().reverse().map(e => (
                     <tr key={e.id}>
-                      <td style={{ color: 'var(--text-muted)' }}>{formatDate(e.date)}</td>
-                      <td><span style={{ fontSize: 12.5, fontWeight: 500 }}>{e.serviceType}</span></td>
-                      <td>{e.clientName || '—'}</td>
+                      <td className="hide-mobile" style={{ color: 'var(--text-muted)' }}>{formatDate(e.date)}</td>
+                      <td className="hide-mobile"><span style={{ fontSize: 12.5, fontWeight: 500 }}>{e.serviceType}</span></td>
+                      <td className="hide-mobile">{e.clientName || '—'}</td>
                       <td>{e.description}</td>
                       <td className="text-right"><span style={{ fontWeight: 700, color: '#16a34a' }}>{formatCurrency(e.amount, settings.currency)}</span></td>
                       <td className="text-right">
@@ -157,7 +157,7 @@ export default function FinancialsPage() {
           {/* Add expense form */}
           <div className="card">
             <p style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}>Add Expense Entry</p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 10, alignItems: 'end' }}>
+            <div className="form-grid-6" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 10, alignItems: 'end' }}>
               <div className="form-group">
                 <label className="form-label">Date</label>
                 <input type="date" className="input-field" value={expForm.date} onChange={e => setExpForm(f => ({ ...f, date: e.target.value }))} />
@@ -190,14 +190,14 @@ export default function FinancialsPage() {
             <div className="table-overflow">
               <table className="data-table">
                 <thead>
-                  <tr><th>Date</th><th>Category</th><th>Vendor</th><th>Description</th><th className="text-right">Amount</th><th className="text-right">Action</th></tr>
+                  <tr><th className="hide-mobile">Date</th><th className="hide-mobile">Category</th><th className="hide-mobile">Vendor</th><th>Description</th><th className="text-right">Amount</th><th className="text-right">Action</th></tr>
                 </thead>
                 <tbody>
                   {expenses.length > 0 ? expenses.slice().reverse().map(e => (
                     <tr key={e.id}>
-                      <td style={{ color: 'var(--text-muted)' }}>{formatDate(e.date)}</td>
-                      <td><span style={{ fontSize: 12.5, fontWeight: 500 }}>{e.category}</span></td>
-                      <td>{e.vendor || '—'}</td>
+                      <td className="hide-mobile" style={{ color: 'var(--text-muted)' }}>{formatDate(e.date)}</td>
+                      <td className="hide-mobile"><span style={{ fontSize: 12.5, fontWeight: 500 }}>{e.category}</span></td>
+                      <td className="hide-mobile">{e.vendor || '—'}</td>
                       <td>{e.description}</td>
                       <td className="text-right"><span style={{ fontWeight: 700, color: '#dc2626' }}>{formatCurrency(e.amount, settings.currency)}</span></td>
                       <td className="text-right">
