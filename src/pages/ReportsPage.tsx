@@ -62,7 +62,7 @@ export default function ReportsPage() {
         ].map(({ label, value, color }) => (
           <div key={label} className="card" style={{ padding: '16px 20px' }}>
             <p style={{ fontSize: 11.5, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>{label}</p>
-            <p style={{ fontSize: 20, fontWeight: 700, color, fontFamily: 'Fraunces, serif' }}>{value}</p>
+            <p style={{ fontSize: 20, fontWeight: 700, color, fontFamily: 'Nexa, sans-serif' }}>{value}</p>
           </div>
         ))}
       </div>
@@ -168,7 +168,7 @@ export default function ReportsPage() {
               borderTop: `3px solid ${i === 0 ? '#22c55e' : i === 1 ? '#eab308' : i === 2 ? '#f97316' : '#ef4444'}`,
             }}>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 8 }}>{range} days</p>
-              <p style={{ fontSize: 20, fontWeight: 700, fontFamily: 'Fraunces, serif' }}>{formatCurrency(amount, settings.currency)}</p>
+              <p style={{ fontSize: 20, fontWeight: 700, fontFamily: 'Nexa, sans-serif' }}>{formatCurrency(amount, settings.currency)}</p>
             </div>
           ))}
         </div>

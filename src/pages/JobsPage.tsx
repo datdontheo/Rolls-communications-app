@@ -60,7 +60,7 @@ export default function JobsPage() {
             <div key={s} className="card" style={{ padding: '12px 16px', cursor: 'pointer', textAlign: 'center', borderColor: statusFilter === s ? 'var(--primary)' : 'var(--border)' }}
               onClick={() => setStatusFilter(statusFilter === s ? '' : s)}>
               <span className={`badge badge-${key}`} style={{ marginBottom: 8 }}>{s}</span>
-              <p style={{ fontSize: 22, fontWeight: 700, fontFamily: 'Fraunces, serif' }}>{count}</p>
+              <p style={{ fontSize: 22, fontWeight: 700, fontFamily: 'Nexa, sans-serif' }}>{count}</p>
             </div>
           );
         })}

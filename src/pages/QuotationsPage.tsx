@@ -78,7 +78,7 @@ export default function QuotationsPage() {
               <p style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s}</p>
               <StatusBadge status={s} />
             </div>
-            <p style={{ fontSize: 24, fontWeight: 700, fontFamily: 'Fraunces, serif', marginTop: 8 }}>
+            <p style={{ fontSize: 24, fontWeight: 700, fontFamily: 'Nexa, sans-serif', marginTop: 8 }}>
               {quotations.filter(q => q.status === s).length}
             </p>
             <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&display=swap');
+@import url('https://fonts.cdnfonts.com/css/nexa');
 
 @tailwind base;
 @tailwind components;
@@ -34,7 +34,7 @@
   --radius-lg: 14px;
   --radius-full: 9999px;
 
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Nexa', system-ui, sans-serif;
   font-size: 15px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -74,17 +74,17 @@ html.dark {
 body {
   background-color: var(--bg);
   color: var(--text);
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Nexa', system-ui, sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 #root { min-height: 100vh; display: flex; flex-direction: column; }
 
 /* ─── TYPOGRAPHY ─────────────────────────────────────────────────── */
-.font-display { font-family: 'Fraunces', Georgia, serif; }
+.font-display { font-family: 'Nexa', sans-serif; }
 
 h1, h2, h3 {
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: 'Nexa', sans-serif;
   color: var(--text);
   letter-spacing: -0.02em;
   line-height: 1.2;
@@ -153,7 +153,7 @@ h1, h2, h3 {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Fraunces', serif;
+  font-family: 'Nexa', sans-serif;
   font-weight: 700;
   font-size: 15px;
   color: white;
@@ -230,7 +230,7 @@ h1, h2, h3 {
 }
 
 .header-title {
-  font-family: 'Fraunces', serif;
+  font-family: 'Nexa', sans-serif;
   font-size: 20px;
   font-weight: 600;
   color: var(--text);
@@ -330,7 +330,7 @@ h1, h2, h3 {
 .stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
 
 .stat-label { font-size: 12.5px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
-.stat-value { font-size: 26px; font-weight: 700; color: var(--text); letter-spacing: -0.03em; font-family: 'Fraunces', serif; line-height: 1; }
+.stat-value { font-size: 26px; font-weight: 700; color: var(--text); letter-spacing: -0.03em; font-family: 'Nexa', sans-serif; line-height: 1; }
 .stat-icon { width: 38px; height: 38px; border-radius: 10px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary); }
 
 .stat-trend {
@@ -353,7 +353,7 @@ h1, h2, h3 {
   gap: 7px;
   font-size: 13.5px;
   font-weight: 600;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Nexa', sans-serif;
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -446,7 +446,7 @@ h1, h2, h3 {
   border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 13.5px;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Nexa', sans-serif;
   color: var(--text);
   width: 100%;
   outline: none;
@@ -605,7 +605,7 @@ select.input-field {
 }
 
 .modal-title {
-  font-family: 'Fraunces', serif;
+  font-family: 'Nexa', sans-serif;
   font-size: 18px;
   font-weight: 600;
   color: var(--text);
@@ -647,7 +647,7 @@ select.input-field {
   margin-bottom: 24px;
 }
 
-.page-title { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 700; color: var(--text); letter-spacing: -0.03em; }
+.page-title { font-family: 'Nexa', sans-serif; font-size: 24px; font-weight: 700; color: var(--text); letter-spacing: -0.03em; }
 .page-subtitle { font-size: 13.5px; color: var(--text-muted); margin-top: 2px; }
 
 /* ─── FILTER BAR ─────────────────────────────────────────────── */

@@ -56,7 +56,7 @@ export default function InvoicesPage() {
         ].map(({ label, value, color }) => (
           <div key={label} className="card" style={{ padding: '16px 20px' }}>
             <p style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 6 }}>{label}</p>
-            <p style={{ fontSize: 22, fontWeight: 700, color, fontFamily: 'Fraunces, serif' }}>{value}</p>
+            <p style={{ fontSize: 22, fontWeight: 700, color, fontFamily: 'Nexa, sans-serif' }}>{value}</p>
           </div>
         ))}
       </div>

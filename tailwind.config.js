@@ -7,8 +7,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['DM Sans', 'sans-serif'],
-        display: ['Fraunces', 'serif'],
+        sans: ['Nexa', 'system-ui', 'sans-serif'],
+        display: ['Nexa', 'sans-serif'],
       },
       colors: {
         primary: 'var(--color-primary)',

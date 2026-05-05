@@ -52,7 +52,7 @@ export default function ClientsPage() {
           <div key={cat} className="card" style={{ padding: '14px 18px', cursor: 'pointer', borderColor: catFilter === cat ? 'var(--primary)' : 'var(--border)' }}
             onClick={() => setCatFilter(catFilter === cat ? '' : cat)}>
             <p style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{cat}</p>
-            <p style={{ fontSize: 24, fontWeight: 700, fontFamily: 'Fraunces, serif', marginTop: 4 }}>
+            <p style={{ fontSize: 24, fontWeight: 700, fontFamily: 'Nexa, sans-serif', marginTop: 4 }}>
               {clients.filter(c => c.category === cat).length}
             </p>
           </div>

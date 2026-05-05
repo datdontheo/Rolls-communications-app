@@ -114,7 +114,7 @@ export default function LoginPage() {
               margin: '0 auto 16px',
               fontSize: 24,
               fontWeight: 700,
-              fontFamily: 'Fraunces, serif',
+              fontFamily: 'Nexa, sans-serif',
               color: 'white',
               boxShadow: '0 8px 24px rgba(29,158,117,0.35)',
             }}>RC</div>

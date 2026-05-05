@@ -65,15 +65,15 @@ export default function InventoryPage() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 24 }}>
         <div className="card" style={{ padding: '14px 18px' }}>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 6 }}>Total Items</p>
-          <p style={{ fontSize: 24, fontWeight: 700, fontFamily: 'Fraunces, serif' }}>{stock.length}</p>
+          <p style={{ fontSize: 24, fontWeight: 700, fontFamily: 'Nexa, sans-serif' }}>{stock.length}</p>
         </div>
         <div className="card" style={{ padding: '14px 18px' }}>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 6 }}>Low Stock</p>
-          <p style={{ fontSize: 24, fontWeight: 700, fontFamily: 'Fraunces, serif', color: lowStock.length > 0 ? '#dc2626' : 'inherit' }}>{lowStock.length}</p>
+          <p style={{ fontSize: 24, fontWeight: 700, fontFamily: 'Nexa, sans-serif', color: lowStock.length > 0 ? '#dc2626' : 'inherit' }}>{lowStock.length}</p>
         </div>
         <div className="card" style={{ padding: '14px 18px' }}>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 6 }}>Inventory Value</p>
-          <p style={{ fontSize: 24, fontWeight: 700, fontFamily: 'Fraunces, serif', color: 'var(--primary)' }}>{formatCurrency(totalValue, settings.currency)}</p>
+          <p style={{ fontSize: 24, fontWeight: 700, fontFamily: 'Nexa, sans-serif', color: 'var(--primary)' }}>{formatCurrency(totalValue, settings.currency)}</p>
         </div>
       </div>
 
