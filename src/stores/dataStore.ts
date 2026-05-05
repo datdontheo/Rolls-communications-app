@@ -140,13 +140,14 @@ export const useDataStore = create<DataState>((set, get) => ({
   addClient: async (client) => {
     try {
       const id = Math.random().toString(36).substr(2, 9);
+      const createdAt = new Date().toISOString();
       const { error } = await supabase.from('clients').insert({
         ...client,
         id,
-        created_at: new Date().toISOString(),
+        createdAt,
       });
       if (error) throw error;
-      set((state) => ({ clients: [...state.clients, { ...client, id, createdAt: new Date().toISOString() }] }));
+      set((state) => ({ clients: [...state.clients, { ...client, id, createdAt }] }));
     } catch (err) {
       console.error('Failed to add client:', err);
       throw err;
@@ -201,8 +202,8 @@ export const useDataStore = create<DataState>((set, get) => ({
         ...invoice,
         id,
         number,
-        created_at: now,
-        updated_at: now,
+        createdAt: now,
+        updatedAt: now,
       });
       if (error) throw error;
       set((state) => ({
@@ -216,9 +217,10 @@ export const useDataStore = create<DataState>((set, get) => ({
 
   updateInvoice: async (id, invoice) => {
     try {
+      const updatedAt = new Date().toISOString();
       const { error } = await supabase
         .from('invoices')
-        .update({ ...invoice, updated_at: new Date().toISOString() })
+        .update({ ...invoice, updatedAt })
         .eq('id', id);
       if (error) throw error;
       set((state) => ({
@@ -267,8 +269,8 @@ export const useDataStore = create<DataState>((set, get) => ({
         ...quotation,
         id,
         number,
-        created_at: now,
-        updated_at: now,
+        createdAt: now,
+        updatedAt: now,
       });
       if (error) throw error;
       set((state) => ({
@@ -282,9 +284,10 @@ export const useDataStore = create<DataState>((set, get) => ({
 
   updateQuotation: async (id, quotation) => {
     try {
+      const updatedAt = new Date().toISOString();
       const { error } = await supabase
         .from('quotations')
-        .update({ ...quotation, updated_at: new Date().toISOString() })
+        .update({ ...quotation, updatedAt })
         .eq('id', id);
       if (error) throw error;
       set((state) => ({
@@ -332,9 +335,9 @@ export const useDataStore = create<DataState>((set, get) => ({
       const { error } = await supabase.from('jobs').insert({
         ...job,
         id,
-        job_id: jobId,
-        created_at: now,
-        updated_at: now,
+        jobId,
+        createdAt: now,
+        updatedAt: now,
       });
       if (error) throw error;
       set((state) => ({ jobs: [...state.jobs, { ...job, id, jobId, createdAt: now, updatedAt: now }] }));
@@ -346,9 +349,10 @@ export const useDataStore = create<DataState>((set, get) => ({
 
   updateJob: async (id, job) => {
     try {
+      const updatedAt = new Date().toISOString();
       const { error } = await supabase
         .from('jobs')
-        .update({ ...job, updated_at: new Date().toISOString() })
+        .update({ ...job, updatedAt })
         .eq('id', id);
       if (error) throw error;
       set((state) => ({
@@ -391,14 +395,15 @@ export const useDataStore = create<DataState>((set, get) => ({
   addIncomeEntry: async (entry) => {
     try {
       const id = Math.random().toString(36).substr(2, 9);
+      const createdAt = new Date().toISOString();
       const { error } = await supabase.from('income_entries').insert({
         ...entry,
         id,
-        created_at: new Date().toISOString(),
+        createdAt,
       });
       if (error) throw error;
       set((state) => ({
-        income: [...state.income, { ...entry, id, createdAt: new Date().toISOString() }],
+        income: [...state.income, { ...entry, id, createdAt }],
       }));
     } catch (err) {
       console.error('Failed to add income entry:', err);
@@ -433,14 +438,15 @@ export const useDataStore = create<DataState>((set, get) => ({
   addExpenseEntry: async (entry) => {
     try {
       const id = Math.random().toString(36).substr(2, 9);
+      const createdAt = new Date().toISOString();
       const { error } = await supabase.from('expense_entries').insert({
         ...entry,
         id,
-        created_at: new Date().toISOString(),
+        createdAt,
       });
       if (error) throw error;
       set((state) => ({
-        expenses: [...state.expenses, { ...entry, id, createdAt: new Date().toISOString() }],
+        expenses: [...state.expenses, { ...entry, id, createdAt }],
       }));
     } catch (err) {
       console.error('Failed to add expense entry:', err);
@@ -475,14 +481,15 @@ export const useDataStore = create<DataState>((set, get) => ({
   addStockItem: async (item) => {
     try {
       const id = Math.random().toString(36).substr(2, 9);
+      const createdAt = new Date().toISOString();
       const { error } = await supabase.from('stock_items').insert({
         ...item,
         id,
-        created_at: new Date().toISOString(),
+        createdAt,
       });
       if (error) throw error;
       set((state) => ({
-        stock: [...state.stock, { ...item, id, createdAt: new Date().toISOString() }],
+        stock: [...state.stock, { ...item, id, createdAt }],
       }));
     } catch (err) {
       console.error('Failed to add stock item:', err);
