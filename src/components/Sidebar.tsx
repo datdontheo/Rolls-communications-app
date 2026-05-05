@@ -86,7 +86,6 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                   maxWidth: 140,
                   objectFit: 'contain',
                   objectPosition: 'left center',
-                  filter: 'brightness(0) invert(1)',
                   display: 'block',
                 }}
               />
