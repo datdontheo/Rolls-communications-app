@@ -96,7 +96,30 @@ h1, h2, h3 {
 .page-content { flex: 1; overflow-y: auto; padding: 28px 32px; }
 
 @media (max-width: 767px) {
-  .page-content { padding-top: 80px; }
+  .page-content { padding: 20px 16px; }
+}
+
+/* ─── MOBILE MENU BURGER (lives inside header, not floating) ─── */
+.menu-burger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--primary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+.menu-burger:hover { background: var(--primary-light); border-color: var(--primary); }
+
+@media (max-width: 767px) {
+  .menu-burger { display: flex; }
+  .header-search { display: none; }
+  .header-avatar-name { display: none; }
 }
 
 /* ─── SIDEBAR ─────────────────────────────────────────────────────── */

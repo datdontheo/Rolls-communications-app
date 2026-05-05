@@ -2,9 +2,8 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, FileText, Briefcase, Users,
   TrendingUp, Package, BarChart3, Settings,
-  LogOut, Menu, X, Sun, Moon, Receipt,
+  LogOut, Sun, Moon, Receipt,
 } from 'lucide-react';
-import { useState } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { useThemeStore } from '../stores/themeStore';
 
@@ -20,8 +19,12 @@ const navItems = [
   { path: '/settings', icon: Settings, label: 'Settings', section: 'system' },
 ];
 
-export default function Sidebar() {
-  const [isOpen, setIsOpen] = useState(false);
+interface SidebarProps {
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
+}
+
+export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
   const location = useLocation();
   const { logout } = useAuthStore();
   const { isDark, toggle } = useThemeStore();
@@ -41,57 +44,30 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Mobile toggle */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="md:hidden"
-        style={{
-          position: 'fixed',
-          top: 16,
-          left: 16,
-          zIndex: 50,
-          width: 40,
-          height: 40,
-          borderRadius: 10,
-          background: 'var(--bg-card)',
-          border: '1px solid var(--border)',
-          color: 'var(--primary)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-          transition: 'all 0.2s ease',
-          boxShadow: isOpen ? '0 8px 24px rgba(29, 158, 117, 0.15)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
-        }}
-      >
-        {isOpen ? <X size={20} strokeWidth={2.5} /> : <Menu size={20} strokeWidth={2} />}
-      </button>
-
-      {/* Overlay */}
+      {/* Backdrop overlay on mobile */}
       {isOpen && (
         <div
           className="fixed inset-0 z-30 md:hidden"
-          style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
+          style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}
           onClick={() => setIsOpen(false)}
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar panel */}
       <aside
         className="sidebar"
         style={{
-          transform: isOpen ? 'translateX(0)' : undefined,
           position: 'fixed',
           top: 0,
           left: 0,
           bottom: 0,
           transition: 'transform 0.25s ease',
+          zIndex: 40,
         }}
       >
-        {/* Desktop: static, Mobile: fixed overlay */}
         <style>{`
           @media (min-width: 768px) {
-            .sidebar { position: static !important; transform: translateX(0) !important; }
+            .sidebar { position: static !important; transform: translateX(0) !important; z-index: auto !important; }
           }
           @media (max-width: 767px) {
             .sidebar { transform: ${isOpen ? 'translateX(0)' : 'translateX(-100%)'} !important; }
@@ -151,7 +127,7 @@ export default function Sidebar() {
           ))}
         </nav>
 
-        {/* Footer actions */}
+        {/* Footer */}
         <div className="sidebar-footer">
           <button onClick={toggle} className="nav-item" style={{ width: '100%' }}>
             {isDark ? <Sun size={16} className="nav-icon" /> : <Moon size={16} className="nav-icon" />}

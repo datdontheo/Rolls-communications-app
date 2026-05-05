@@ -1,5 +1,5 @@
 import { useLocation } from 'react-router-dom';
-import { Search, Bell, Moon, Sun } from 'lucide-react';
+import { Search, Bell, Moon, Sun, Menu } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { useThemeStore } from '../stores/themeStore';
 
@@ -15,7 +15,11 @@ const PAGE_TITLES: Record<string, { title: string; subtitle: string }> = {
   '/settings': { title: 'Settings', subtitle: 'Company profile and preferences' },
 };
 
-export default function Header() {
+interface HeaderProps {
+  onMenuToggle: () => void;
+}
+
+export default function Header({ onMenuToggle }: HeaderProps) {
   const location = useLocation();
   const { user } = useAuthStore();
   const { isDark, toggle } = useThemeStore();
@@ -24,6 +28,15 @@ export default function Header() {
 
   return (
     <header className="top-header">
+      {/* Mobile burger — sits inside the header, no overlap */}
+      <button
+        onClick={onMenuToggle}
+        className="menu-burger md:hidden"
+        aria-label="Open menu"
+      >
+        <Menu size={20} strokeWidth={2} />
+      </button>
+
       <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         <span className="header-title">{page.title}</span>
         {page.subtitle && (
