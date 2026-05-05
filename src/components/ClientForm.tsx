@@ -22,7 +22,7 @@ interface ClientFormProps {
 }
 
 export default function ClientForm({ clientId, onClose }: ClientFormProps) {
-  const { clients, addClient, updateClient, getClient } = useDataStore();
+  const { addClient, updateClient, getClient } = useDataStore();
   const toast = useToast();
   const client = clientId ? getClient(clientId) : null;
 

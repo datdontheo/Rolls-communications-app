@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Plus, Edit2, Trash2, Eye, Download } from 'lucide-react';
+import { Plus, Edit2, Trash2, Eye } from 'lucide-react';
 import Layout from '../components/Layout';
 import Modal from '../components/Modal';
 import { useDataStore } from '../stores/dataStore';

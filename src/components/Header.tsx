@@ -4,7 +4,7 @@ import { useAuthStore } from '../stores/authStore';
 
 export default function Header() {
   const location = useLocation();
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
 
   const getPageTitle = () => {
     const path = location.pathname;

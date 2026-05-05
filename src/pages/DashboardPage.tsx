@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { AlertCircle, DollarSign, FileText, Clock, AlertTriangle } from 'lucide-react';
 import Layout from '../components/Layout';
 import StatCard from '../components/StatCard';
@@ -155,8 +155,8 @@ export default function DashboardPage() {
             </h2>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
-                <Pie data={revenueByService} cx="50%" cy="50%" labelLine={false} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} outerRadius={80} fill="#8884d8" dataKey="value">
-                  {revenueByService.map((entry, index) => (
+                <Pie data={revenueByService} cx="50%" cy="50%" labelLine={false} label={({ name, percent = 0 }) => `${name} ${(percent * 100).toFixed(0)}%`} outerRadius={80} fill="#8884d8" dataKey="value">
+                  {revenueByService.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>

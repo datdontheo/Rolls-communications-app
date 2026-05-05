@@ -66,7 +66,7 @@ export default function JobForm({ jobId, onClose }: JobFormProps) {
       status: data.status,
       assignedTo: data.assignedTo,
       deadline: data.deadline,
-      stages: data.stages.map((s, idx) => ({
+      stages: data.stages.map((s) => ({
         id: Math.random().toString(36).substr(2, 9),
         name: s.name,
         completed: false,
@@ -135,16 +135,16 @@ export default function JobForm({ jobId, onClose }: JobFormProps) {
       <div>
         <label className="block text-sm font-medium mb-2">Production Stages</label>
         <div className="space-y-2">
-          {fields.map((field, idx) => (
+          {fields.map((field, index) => (
             <div key={field.id} className="flex gap-2">
               <input
-                {...register(`stages.${idx}.name`)}
+                {...register(`stages.${index}.name`)}
                 placeholder="Stage name"
                 className="input-field flex-1"
               />
               <button
                 type="button"
-                onClick={() => remove(idx)}
+                onClick={() => remove(index)}
                 className="p-2 rounded-lg text-red-600 hover:bg-red-50"
               >
                 <Trash2 size={18} />

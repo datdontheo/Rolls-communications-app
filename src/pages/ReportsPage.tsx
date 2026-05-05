@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import Layout from '../components/Layout';
 import { useDataStore } from '../stores/dataStore';
-import { formatCurrency, formatDate } from '../utils/formatting';
+import { formatCurrency } from '../utils/formatting';
 import { eachMonthOfInterval, subMonths } from 'date-fns';
 
 const COLORS = ['#1D9E75', '#BA7517', '#2D9F8F', '#D4891F', '#1AA369'];
@@ -96,7 +96,6 @@ export default function ReportsPage() {
   }, [invoices]);
 
   const jobStats = useMemo(() => {
-    const total = jobs.length;
     const completed = jobs.filter((j) => j.status === 'Completed').length;
     const onTime = jobs.filter((j) => j.status === 'Completed' && new Date(j.deadline) >= new Date(j.updatedAt)).length;
     const delayed = completed - onTime;
@@ -134,8 +133,8 @@ export default function ReportsPage() {
             <h3 className="text-lg font-bold font-display mb-4">Revenue by Service</h3>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
-                <Pie data={revenueByService} cx="50%" cy="50%" labelLine={false} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} outerRadius={100} fill="#8884d8" dataKey="value">
-                  {revenueByService.map((entry, index) => (
+                <Pie data={revenueByService} cx="50%" cy="50%" labelLine={false} label={({ name, percent = 0 }) => `${name} ${(percent * 100).toFixed(0)}%`} outerRadius={100} fill="#8884d8" dataKey="value">
+                  {revenueByService.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
@@ -148,8 +147,8 @@ export default function ReportsPage() {
             <h3 className="text-lg font-bold font-display mb-4">Job Completion Status</h3>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
-                <Pie data={jobStats} cx="50%" cy="50%" labelLine={false} label={({ name, value }) => `${name}: ${value}`} outerRadius={100} fill="#8884d8" dataKey="value">
-                  {jobStats.map((entry, index) => (
+                <Pie data={jobStats} cx="50%" cy="50%" labelLine={false} label={({ name, value = 0 }) => `${name}: ${value}`} outerRadius={100} fill="#8884d8" dataKey="value">
+                  {jobStats.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={index === 0 ? '#10b981' : '#ef4444'} />
                   ))}
                 </Pie>
