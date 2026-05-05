@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
-import { Plus, Edit2, Trash2, Eye, FileText } from 'lucide-react';
+import { Plus, Edit2, Trash2, Eye, FileText, Download } from 'lucide-react';
 import Layout from '../components/Layout';
 import Modal from '../components/Modal';
 import { useDataStore } from '../stores/dataStore';
 import { formatCurrency, formatDate } from '../utils/formatting';
 import InvoiceForm from '../components/InvoiceForm';
 import InvoicePDF from '../components/InvoicePDF';
+import PaymentReceiptPDF from '../components/PaymentReceiptPDF';
 import { useToast } from '../components/Toast';
 
 function StatusBadge({ status }: { status: string }) {
@@ -18,6 +19,7 @@ export default function InvoicesPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [viewId, setViewId] = useState<string | null>(null);
+  const [receiptId, setReceiptId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState('');
   const [search, setSearch] = useState('');
   const toast = useToast();
@@ -117,6 +119,11 @@ export default function InvoicesPage() {
                       <button onClick={() => setViewId(inv.id)} className="btn btn-ghost btn-icon btn-sm" title="Preview PDF">
                         <Eye size={16} />
                       </button>
+                      {inv.status === 'Paid' && (
+                        <button onClick={() => setReceiptId(inv.id)} className="btn btn-ghost btn-icon btn-sm" title="Download Payment Receipt">
+                          <Download size={16} />
+                        </button>
+                      )}
                       <button onClick={() => openEdit(inv.id)} className="btn btn-ghost btn-icon btn-sm" title="Edit">
                         <Edit2 size={16} />
                       </button>
@@ -148,6 +155,10 @@ export default function InvoicesPage() {
 
       <Modal isOpen={!!viewId} title="Invoice Preview" onClose={() => setViewId(null)} size="md">
         {viewId && <InvoicePDF invoiceId={viewId} />}
+      </Modal>
+
+      <Modal isOpen={!!receiptId} title="Payment Receipt" onClose={() => setReceiptId(null)} size="md">
+        {receiptId && <PaymentReceiptPDF invoiceId={receiptId} />}
       </Modal>
     </Layout>
   );
