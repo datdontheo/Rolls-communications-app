@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard, FileText, Briefcase, Users,
+  LayoutDashboard, Briefcase, Users,
   TrendingUp, Package, BarChart3, Settings,
   LogOut, Sun, Moon, Receipt, X,
 } from 'lucide-react';
@@ -11,7 +11,6 @@ import { useDataStore } from '../stores/dataStore';
 const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Dashboard', section: 'main' },
   { path: '/invoices', icon: Receipt, label: 'Invoices', section: 'main' },
-  { path: '/quotations', icon: FileText, label: 'Quotations', section: 'main' },
   { path: '/jobs', icon: Briefcase, label: 'Jobs', section: 'main' },
   { path: '/clients', icon: Users, label: 'Clients', section: 'main' },
   { path: '/financials', icon: TrendingUp, label: 'Financials', section: 'ops' },

@@ -8,7 +8,6 @@ import ToastContainer from './components/Toast';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import InvoicesPage from './pages/InvoicesPage';
-import QuotationsPage from './pages/QuotationsPage';
 import JobsPage from './pages/JobsPage';
 import ClientsPage from './pages/ClientsPage';
 import FinancialsPage from './pages/FinancialsPage';
@@ -54,14 +53,6 @@ function App() {
             element={
               <ProtectedRoute>
                 <InvoicesPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/quotations"
-            element={
-              <ProtectedRoute>
-                <QuotationsPage />
               </ProtectedRoute>
             }
           />
