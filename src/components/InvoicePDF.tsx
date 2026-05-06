@@ -8,9 +8,9 @@ import Modal from './Modal';
 const styles = StyleSheet.create({
   page: { padding: 40, fontFamily: 'Helvetica', backgroundColor: '#FFFFFF', fontSize: 11 },
   logoArea: { alignItems: 'center', marginBottom: 24, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: '#000' },
-  logo: { width: 80, height: 60, objectFit: 'contain', marginBottom: 8 },
-  logoBox: { width: 80, height: 60, backgroundColor: '#1D9E75', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  logoText: { fontSize: 28, fontWeight: 'bold', color: '#FFFFFF', fontFamily: 'Helvetica-Bold' },
+  logo: { width: 140, height: 100, objectFit: 'contain', marginBottom: 8 },
+  logoBox: { width: 140, height: 100, backgroundColor: '#1D9E75', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  logoText: { fontSize: 42, fontWeight: 'bold', color: '#FFFFFF', fontFamily: 'Helvetica-Bold' },
   title: { fontSize: 28, fontWeight: 'bold', color: '#333333', fontFamily: 'Helvetica-Bold', marginBottom: 20 },
   metaRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20, gap: 20 },
   metaBlock: { flex: 1 },

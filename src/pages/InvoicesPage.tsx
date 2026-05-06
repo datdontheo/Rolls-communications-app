@@ -24,10 +24,13 @@ export default function InvoicesPage() {
   const [search, setSearch] = useState('');
   const toast = useToast();
 
-  const filtered = useMemo(() => invoices.filter(inv =>
-    (!statusFilter || inv.status === statusFilter) &&
-    (!search || inv.clientName.toLowerCase().includes(search.toLowerCase()) || inv.number.toLowerCase().includes(search.toLowerCase()))
-  ), [invoices, statusFilter, search]);
+  const filtered = useMemo(() => invoices
+    .filter(inv =>
+      (!statusFilter || inv.status === statusFilter) &&
+      (!search || inv.clientName.toLowerCase().includes(search.toLowerCase()) || inv.number.toLowerCase().includes(search.toLowerCase()))
+    )
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  , [invoices, statusFilter, search]);
 
   const totals = useMemo(() => ({
     all: invoices.reduce((s, i) => s + i.total, 0),
