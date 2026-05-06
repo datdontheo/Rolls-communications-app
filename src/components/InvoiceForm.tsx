@@ -13,6 +13,7 @@ const schema = z.object({
   dueDate: z.string().optional(),
   vatRate: z.number().min(0).max(100, 'VAT must be 0-100%'),
   items: z.array(z.object({
+    item: z.string().min(1, 'Item name required'),
     description: z.string().min(1, 'Description required'),
     qty: z.number().min(1, 'Qty must be at least 1'),
     unitCost: z.number().min(0, 'Cost must be 0 or more'),
@@ -36,7 +37,7 @@ export default function InvoiceForm({ invoiceId, onClose }: { invoiceId?: string
       date: invoice.date,
       dueDate: invoice.dueDate,
       vatRate: invoice.vatRate,
-      items: invoice.items.map(i => ({ description: i.description, qty: i.qty, unitCost: i.unitCost })),
+      items: invoice.items.map(i => ({ item: i.item, description: i.description, qty: i.qty, unitCost: i.unitCost })),
       notes: invoice.notes,
       status: invoice.status,
     } : {
@@ -44,7 +45,7 @@ export default function InvoiceForm({ invoiceId, onClose }: { invoiceId?: string
       clientId: '',
       date: new Date().toISOString().split('T')[0],
       vatRate: 20,
-      items: [{ description: '', qty: 1, unitCost: 0 }],
+      items: [{ item: '', description: '', qty: 1, unitCost: 0 }],
       status: 'Draft',
     },
   });
@@ -57,10 +58,8 @@ export default function InvoiceForm({ invoiceId, onClose }: { invoiceId?: string
   const total = subtotal + vat;
 
   const onSubmit = async (data: FormData) => {
-    console.log('Form submission started with data:', data);
     const client = clients.find(c => c.id === data.clientId);
     if (!client) {
-      console.error('Client not found with ID:', data.clientId);
       toast.error('Invalid client');
       return;
     }
@@ -74,22 +73,19 @@ export default function InvoiceForm({ invoiceId, onClose }: { invoiceId?: string
         date: data.date,
         dueDate: data.dueDate,
         vatRate: data.vatRate,
-        items: data.items.map(item => ({ id: Math.random().toString(36).substr(2, 9), ...item })),
+        items: data.items.map(item => ({ ...item })),
         subtotal, vat, total,
         notes: data.notes,
         status: data.status,
         number: invoice?.number || generateInvoiceNumber(settings.invoicePrefix),
       };
-      console.log('Invoice payload:', payload);
 
       if (invoice) {
         await updateInvoice(invoice.id, payload);
-        console.log('Invoice updated successfully');
         toast.success('Invoice updated');
       }
       else {
         await addInvoice(payload as any);
-        console.log('Invoice created successfully');
         toast.success('Invoice created');
       }
       onClose();
@@ -101,9 +97,6 @@ export default function InvoiceForm({ invoiceId, onClose }: { invoiceId?: string
         : err && typeof err === 'object' && 'error' in err
         ? (err as any).error
         : String(err);
-      console.error('Invoice form error details:', err);
-      console.error('Error message:', errorMsg);
-      console.error('Full error object:', JSON.stringify(err, null, 2));
       toast.error(invoice ? `Failed to update invoice: ${errorMsg}` : `Failed to create invoice: ${errorMsg}`);
     }
   };
@@ -148,18 +141,22 @@ export default function InvoiceForm({ invoiceId, onClose }: { invoiceId?: string
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {/* Header */}
           <div className="line-item-row" style={{ padding: '0 0 4px' }}>
+            <p style={{ width: 120, fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Item</p>
             <p style={{ flex: 1, fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Description</p>
-            <p style={{ width: 80, fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Qty</p>
-            <p style={{ width: 110, fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unit Cost</p>
-            <p style={{ width: 110, fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Total</p>
+            <p style={{ width: 70, fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Qty</p>
+            <p style={{ width: 100, fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unit Cost</p>
+            <p style={{ width: 100, fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Total</p>
             <div style={{ width: 36 }} />
           </div>
 
           {fields.map((field, idx) => (
             <div key={field.id} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               <div className="line-item-row" style={{ alignItems: 'center' }}>
+                <div style={{ width: 120 }}>
+                  <input {...register(`items.${idx}.item`)} placeholder="Item name" className="input-field" />
+                </div>
                 <div className="line-item-desc">
-                  <input {...register(`items.${idx}.description`)} placeholder="Item description" className="input-field" />
+                  <input {...register(`items.${idx}.description`)} placeholder="Description" className="input-field" />
                 </div>
                 <div className="line-item-qty">
                   <input {...register(`items.${idx}.qty`, { valueAsNumber: true })} type="number" min={1} className="input-field" />
@@ -167,20 +164,21 @@ export default function InvoiceForm({ invoiceId, onClose }: { invoiceId?: string
                 <div className="line-item-cost">
                   <input {...register(`items.${idx}.unitCost`, { valueAsNumber: true })} type="number" step="0.01" min={0} className="input-field" />
                 </div>
-                <div style={{ width: 110, textAlign: 'right', fontSize: 13.5, fontWeight: 600, color: 'var(--text)' }}>
+                <div style={{ width: 100, textAlign: 'right', fontSize: 13.5, fontWeight: 600, color: 'var(--text)' }}>
                   {settings.currency} {((items[idx]?.qty || 0) * (items[idx]?.unitCost || 0)).toFixed(2)}
                 </div>
                 <button type="button" onClick={() => remove(idx)} className="btn btn-danger btn-icon btn-sm" title="Remove item">
                   <Trash2 size={15} />
                 </button>
               </div>
+              {errors.items?.[idx]?.item && <p className="form-error" style={{ margin: '0 0 0 0' }}>{errors.items[idx]?.item?.message}</p>}
               {errors.items?.[idx]?.description && <p className="form-error" style={{ margin: '0 0 0 0' }}>{errors.items[idx]?.description?.message}</p>}
               {errors.items?.[idx]?.qty && <p className="form-error" style={{ margin: '0 0 0 0' }}>{errors.items[idx]?.qty?.message}</p>}
               {errors.items?.[idx]?.unitCost && <p className="form-error" style={{ margin: '0 0 0 0' }}>{errors.items[idx]?.unitCost?.message}</p>}
             </div>
           ))}
 
-          <button type="button" onClick={() => append({ description: '', qty: 1, unitCost: 0 })}
+          <button type="button" onClick={() => append({ item: '', description: '', qty: 1, unitCost: 0 })}
             className="btn btn-ghost btn-sm" style={{ alignSelf: 'flex-start', color: 'var(--primary)' }}>
             <Plus size={15} /> Add Item
           </button>

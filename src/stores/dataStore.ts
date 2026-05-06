@@ -190,9 +190,38 @@ export const useDataStore = create<DataState>((set, get) => ({
   invoices: [],
   loadInvoices: async () => {
     try {
-      const { data, error } = await supabase.from('invoices').select('*').run();
+      const { data: invoices, error } = await supabase.from('invoices').select('*').run();
       if (error) throw error;
-      set({ invoices: data || [] });
+
+      // Load line items for all invoices
+      const { data: lineItems, error: itemsError } = await supabase.from('line_items').select('*').run();
+      if (itemsError) throw itemsError;
+
+      // Group line items by invoice_id
+      const itemsByInvoiceId: Record<string, any[]> = {};
+      (lineItems || []).forEach((item: any) => {
+        if (!itemsByInvoiceId[item.invoiceId]) {
+          itemsByInvoiceId[item.invoiceId] = [];
+        }
+        itemsByInvoiceId[item.invoiceId].push({
+          id: item.id,
+          item: item.item,
+          description: item.description,
+          qty: item.qty,
+          unitCost: item.unitCost,
+        });
+      });
+
+      // Attach line items to invoices
+      const invoicesWithItems = (invoices || []).map((inv: any) => {
+        const items = itemsByInvoiceId[inv.id] || [];
+        return {
+          ...inv,
+          items: items as any,
+        };
+      });
+
+      set({ invoices: invoicesWithItems });
     } catch (err) {
       console.error('Failed to load invoices:', err);
       set({ error: 'Failed to load invoices' });
@@ -204,19 +233,36 @@ export const useDataStore = create<DataState>((set, get) => ({
       const id = Math.random().toString(36).substr(2, 9);
       const number = invoice.number || generateInvoiceNumber(get().settings.invoicePrefix);
       const now = new Date().toISOString();
-      console.log('addInvoice: inserting with id:', id, 'number:', number);
-      console.log('addInvoice: invoice object:', invoice);
+
+      // Separate items from invoice
+      const { items, ...invoiceData } = invoice;
+
+      // Insert invoice without items (items will go to line_items table)
       const { error } = await supabase.from('invoices').insert({
-        ...invoice,
+        ...invoiceData,
         id,
         number,
         createdAt: now,
         updatedAt: now,
       });
-      console.log('addInvoice: Supabase response - error:', error);
       if (error) throw error;
-      const newInvoice = { ...invoice, id, number, createdAt: now, updatedAt: now };
-      console.log('addInvoice: adding to state:', newInvoice);
+
+      // Insert line items
+      if (items && items.length > 0) {
+        const lineItemsData = items.map((item: any) => ({
+          id: Math.random().toString(36).substr(2, 9),
+          invoiceId: id,
+          item: item.item,
+          description: item.description,
+          qty: item.qty,
+          unitCost: item.unitCost,
+        }));
+
+        const { error: itemsError } = await supabase.from('line_items').insert(lineItemsData);
+        if (itemsError) throw itemsError;
+      }
+
+      const newInvoice = { ...invoiceData, id, number, items, createdAt: now, updatedAt: now };
       set((state) => ({
         invoices: [...state.invoices, newInvoice],
       }));
@@ -229,14 +275,40 @@ export const useDataStore = create<DataState>((set, get) => ({
   updateInvoice: async (id, invoice) => {
     try {
       const updatedAt = new Date().toISOString();
+
+      // Separate items from invoice
+      const { items, ...invoiceData } = invoice;
+
       const { error } = await supabase
         .from('invoices')
-        .update({ ...invoice, updatedAt })
+        .update({ ...invoiceData, updatedAt })
         .eq('id', id);
       if (error) throw error;
+
+      // Update line items: delete old ones and insert new ones
+      const { error: deleteError } = await supabase
+        .from('line_items')
+        .delete()
+        .eq('invoiceId', id);
+      if (deleteError) throw deleteError;
+
+      if (items && items.length > 0) {
+        const lineItemsData = items.map((item: any) => ({
+          id: item.id || Math.random().toString(36).substr(2, 9),
+          invoiceId: id,
+          item: item.item,
+          description: item.description,
+          qty: item.qty,
+          unitCost: item.unitCost,
+        }));
+
+        const { error: itemsError } = await supabase.from('line_items').insert(lineItemsData);
+        if (itemsError) throw itemsError;
+      }
+
       set((state) => ({
         invoices: state.invoices.map((inv) =>
-          inv.id === id ? { ...inv, ...invoice, updatedAt: new Date().toISOString() } : inv
+          inv.id === id ? { ...inv, ...invoiceData, items: items || [], updatedAt } : inv
         ),
       }));
     } catch (err) {

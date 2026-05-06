@@ -90,7 +90,7 @@ function PDFDoc({ invoiceId }: { invoiceId: string }) {
 
         {inv.items.map((item, i) => (
           <View key={i} style={styles.tableRow}>
-            <Text style={[styles.tdText, { width: '20%' }]}>{item.description.split(' ').slice(0, 2).join(' ')}</Text>
+            <Text style={[styles.tdText, { width: '20%' }]}>{item.item}</Text>
             <Text style={[styles.tdMuted, { width: '10%', textAlign: 'center' }]}>{item.qty}</Text>
             <Text style={[styles.tdText, { flex: 1, fontSize: 9 }]}>{item.description}</Text>
             <Text style={[styles.tdMuted, { width: '15%', textAlign: 'right' }]}>{item.unitCost.toFixed(2)}</Text>

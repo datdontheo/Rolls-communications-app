@@ -80,7 +80,10 @@ function PDFDoc({ invoiceId }: { invoiceId: string }) {
           <Text style={styles.sectionTitle}>Items</Text>
           {inv.items.map((item, idx) => (
             <View key={idx} style={styles.tableRow}>
-              <Text style={[styles.tdText, styles.colDesc]}>{item.description}</Text>
+              <View style={styles.colDesc}>
+                <Text style={styles.tdText}>{item.item}</Text>
+                <Text style={[styles.tdMuted, { fontSize: 9 }]}>{item.description}</Text>
+              </View>
               <Text style={[styles.tdMuted, styles.colQty]}>{item.qty}</Text>
               <Text style={[styles.tdText, styles.colAmt]}>{(item.qty * item.unitCost).toFixed(2)}</Text>
             </View>
@@ -94,7 +97,7 @@ function PDFDoc({ invoiceId }: { invoiceId: string }) {
             <Text>{inv.subtotal.toFixed(2)}</Text>
           </View>
           <View style={styles.totalRow}>
-            <Text>VAT/NHIL 20%</Text>
+            <Text>VAT/NHIL {inv.vatRate}%</Text>
             <Text>{inv.vat.toFixed(2)}</Text>
           </View>
           <View style={[styles.totalRow, styles.grandTotalRow]}>

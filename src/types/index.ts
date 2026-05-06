@@ -16,7 +16,8 @@ export interface Client {
 }
 
 export interface LineItem {
-  id: string;
+  id?: string;
+  item: string;
   description: string;
   qty: number;
   unitCost: number;
