@@ -195,7 +195,9 @@ export const useDataStore = create<DataState>((set, get) => ({
 
       // Load line items for all invoices
       const { data: lineItems, error: itemsError } = await supabase.from('line_items').select('*').run();
-      if (itemsError) throw itemsError;
+      if (itemsError) {
+        console.error('Failed to load line items:', itemsError);
+      }
 
       // Group line items by invoice_id
       const itemsByInvoiceId: Record<string, any[]> = {};
@@ -205,12 +207,15 @@ export const useDataStore = create<DataState>((set, get) => ({
         }
         itemsByInvoiceId[item.invoiceId].push({
           id: item.id,
-          item: item.item,
-          description: item.description,
-          qty: item.qty,
-          unitCost: item.unitCost,
+          item: item.item || '',
+          description: item.description || '',
+          qty: item.qty || 0,
+          unitCost: item.unitCost || 0,
         });
       });
+
+      console.log('Loaded invoices:', invoices?.length, 'with line items:', lineItems?.length);
+      console.log('Items by invoice ID:', itemsByInvoiceId);
 
       // Attach line items to invoices
       const invoicesWithItems = (invoices || []).map((inv: any) => {
@@ -252,14 +257,19 @@ export const useDataStore = create<DataState>((set, get) => ({
         const lineItemsData = items.map((item: any) => ({
           id: Math.random().toString(36).substr(2, 9),
           invoiceId: id,
-          item: item.item,
-          description: item.description,
-          qty: item.qty,
-          unitCost: item.unitCost,
+          item: item.item || 'Item',
+          description: item.description || '',
+          qty: item.qty || 0,
+          unitCost: item.unitCost || 0,
         }));
 
+        console.log('Inserting line items:', lineItemsData);
         const { error: itemsError } = await supabase.from('line_items').insert(lineItemsData);
-        if (itemsError) throw itemsError;
+        if (itemsError) {
+          console.error('Failed to insert line items:', itemsError);
+          throw new Error(`Failed to save invoice items: ${itemsError.message}`);
+        }
+        console.log('Line items saved successfully');
       }
 
       const newInvoice = { ...invoiceData, id, number, items, createdAt: now, updatedAt: now };

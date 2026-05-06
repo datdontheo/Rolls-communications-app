@@ -9,6 +9,7 @@ import { useToast } from '../components/Toast';
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [keepLoggedIn, setKeepLoggedIn] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login } = useAuthStore();
   const { isDark, toggle, initTheme } = useThemeStore();
@@ -25,7 +26,7 @@ export default function LoginPage() {
     if (!username || !password) { toast.error('Please fill in all fields'); return; }
     setLoading(true);
     try {
-      if (await login(username, password)) {
+      if (await login(username, password, keepLoggedIn)) {
         toast.success('Welcome back!');
         navigate('/');
       } else {
@@ -177,6 +178,19 @@ export default function LoginPage() {
                   autoComplete="current-password"
                 />
               </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input
+                id="keep-logged-in"
+                type="checkbox"
+                checked={keepLoggedIn}
+                onChange={e => setKeepLoggedIn(e.target.checked)}
+                style={{ width: 16, height: 16, cursor: 'pointer' }}
+              />
+              <label htmlFor="keep-logged-in" style={{ fontSize: 13, color: 'var(--text)', cursor: 'pointer' }}>
+                Keep me logged in for 30 days
+              </label>
             </div>
 
             <button

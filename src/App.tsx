@@ -25,12 +25,14 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function App() {
   const { loadAllData } = useDataStore();
   const { initTheme } = useThemeStore();
+  const { restoreSession } = useAuthStore();
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     const init = async () => {
       try {
         console.log('App: Starting initialization...');
+        restoreSession();
         console.log('App: Initializing theme...');
         await initTheme();
         console.log('App: Theme initialized');
@@ -44,7 +46,7 @@ function App() {
       }
     };
     init();
-  }, [loadAllData]);
+  }, [loadAllData, restoreSession]);
 
   if (!isReady) {
     return (
