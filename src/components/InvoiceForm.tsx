@@ -13,7 +13,7 @@ const schema = z.object({
   dueDate: z.string().optional(),
   vatRate: z.number().min(0).max(100, 'VAT must be 0-100%'),
   items: z.array(z.object({
-    item: z.string().min(1, 'Item name required'),
+    item: z.string().optional(),
     description: z.string().min(1, 'Description required'),
     qty: z.number().min(1, 'Qty must be at least 1'),
     unitCost: z.number().min(0, 'Cost must be 0 or more'),

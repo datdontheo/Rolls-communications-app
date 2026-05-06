@@ -56,8 +56,13 @@ function PDFDoc({ invoiceId }: { invoiceId: string }) {
           }
         </View>
 
-        {/* Title */}
-        <Text style={styles.title}>{typeLabel}</Text>
+        {/* Invoice Number and Title */}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <Text style={styles.title}>{typeLabel}</Text>
+          <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#1D9E75', fontFamily: 'Helvetica-Bold' }}>
+            Invoice #: {inv.number}
+          </Text>
+        </View>
 
         {/* Client Info Row */}
         <View style={styles.metaRow}>
