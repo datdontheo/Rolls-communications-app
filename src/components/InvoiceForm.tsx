@@ -57,8 +57,13 @@ export default function InvoiceForm({ invoiceId, onClose }: { invoiceId?: string
   const total = subtotal + vat;
 
   const onSubmit = async (data: FormData) => {
+    console.log('Form submission started with data:', data);
     const client = clients.find(c => c.id === data.clientId);
-    if (!client) { toast.error('Invalid client'); return; }
+    if (!client) {
+      console.error('Client not found with ID:', data.clientId);
+      toast.error('Invalid client');
+      return;
+    }
 
     try {
       const payload = {
@@ -75,9 +80,18 @@ export default function InvoiceForm({ invoiceId, onClose }: { invoiceId?: string
         status: data.status,
         number: invoice?.number || generateInvoiceNumber(settings.invoicePrefix),
       };
+      console.log('Invoice payload:', payload);
 
-      if (invoice) { await updateInvoice(invoice.id, payload); toast.success('Invoice updated'); }
-      else { await addInvoice(payload as any); toast.success('Invoice created'); }
+      if (invoice) {
+        await updateInvoice(invoice.id, payload);
+        console.log('Invoice updated successfully');
+        toast.success('Invoice updated');
+      }
+      else {
+        await addInvoice(payload as any);
+        console.log('Invoice created successfully');
+        toast.success('Invoice created');
+      }
       onClose();
     } catch (err) {
       const errorMsg = err instanceof Error
@@ -89,6 +103,7 @@ export default function InvoiceForm({ invoiceId, onClose }: { invoiceId?: string
         : String(err);
       console.error('Invoice form error details:', err);
       console.error('Error message:', errorMsg);
+      console.error('Full error object:', JSON.stringify(err, null, 2));
       toast.error(invoice ? `Failed to update invoice: ${errorMsg}` : `Failed to create invoice: ${errorMsg}`);
     }
   };

@@ -204,6 +204,8 @@ export const useDataStore = create<DataState>((set, get) => ({
       const id = Math.random().toString(36).substr(2, 9);
       const number = invoice.number || generateInvoiceNumber(get().settings.invoicePrefix);
       const now = new Date().toISOString();
+      console.log('addInvoice: inserting with id:', id, 'number:', number);
+      console.log('addInvoice: invoice object:', invoice);
       const { error } = await supabase.from('invoices').insert({
         ...invoice,
         id,
@@ -211,9 +213,12 @@ export const useDataStore = create<DataState>((set, get) => ({
         createdAt: now,
         updatedAt: now,
       });
+      console.log('addInvoice: Supabase response - error:', error);
       if (error) throw error;
+      const newInvoice = { ...invoice, id, number, createdAt: now, updatedAt: now };
+      console.log('addInvoice: adding to state:', newInvoice);
       set((state) => ({
-        invoices: [...state.invoices, { ...invoice, id, number, createdAt: now, updatedAt: now }],
+        invoices: [...state.invoices, newInvoice],
       }));
     } catch (err) {
       console.error('Failed to add invoice:', err);
