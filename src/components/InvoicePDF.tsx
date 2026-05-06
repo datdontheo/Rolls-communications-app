@@ -117,6 +117,18 @@ function PDFDoc({ invoiceId }: { invoiceId: string }) {
           </View>
         </View>
 
+        {/* Notes Section */}
+        {inv.notes && (
+          <View style={{ marginTop: 16, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#ccc' }}>
+            <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#666', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>
+              Notes / Payment Terms
+            </Text>
+            <Text style={{ fontSize: 10, color: '#333', lineHeight: 1.5 }}>
+              {inv.notes}
+            </Text>
+          </View>
+        )}
+
         {/* Signature */}
         <View style={styles.signatureArea}>
           <Text style={{ fontSize: 9, color: '#666', marginBottom: 4 }}>Sign:...........................</Text>

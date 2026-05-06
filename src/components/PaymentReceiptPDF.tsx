@@ -106,6 +106,18 @@ function PDFDoc({ invoiceId }: { invoiceId: string }) {
           </View>
         </View>
 
+        {/* Notes */}
+        {inv.notes && (
+          <View style={{ marginTop: 16, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#ccc' }}>
+            <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#666', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>
+              Notes
+            </Text>
+            <Text style={{ fontSize: 10, color: '#333', lineHeight: 1.5 }}>
+              {inv.notes}
+            </Text>
+          </View>
+        )}
+
         {/* Thank You */}
         <Text style={styles.thankYou}>Thank you for your payment. This receipt confirms payment in full.</Text>
 
