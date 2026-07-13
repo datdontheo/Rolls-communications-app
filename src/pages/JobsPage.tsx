@@ -143,10 +143,10 @@ export default function JobsPage() {
                     </td>
                     <td>
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 4 }}>
-                        <button onClick={() => { setEditId(job.id); setIsFormOpen(true); }} className="btn btn-ghost btn-icon btn-sm" title="Edit">
+                        <button onClick={() => { setEditId(job.id); setIsFormOpen(true); }} className="btn btn-ghost btn-icon btn-sm" title="Edit" aria-label="Edit job">
                           <Edit2 size={16} />
                         </button>
-                        <button onClick={() => handleDelete(job.id)} className="btn btn-danger btn-icon btn-sm" title="Delete">
+                        <button onClick={() => handleDelete(job.id)} className="btn btn-danger btn-icon btn-sm" title="Delete" aria-label="Delete job">
                           <Trash2 size={16} />
                         </button>
                       </div>

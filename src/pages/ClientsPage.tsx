@@ -5,13 +5,14 @@ import Modal from '../components/Modal';
 import { useDataStore } from '../stores/dataStore';
 import ClientForm from '../components/ClientForm';
 import { useToast } from '../components/Toast';
+import { formatCurrency } from '../utils/formatting';
 
 function CategoryBadge({ cat }: { cat: string }) {
   return <span className={`badge badge-${cat.toLowerCase()}`}>{cat}</span>;
 }
 
 export default function ClientsPage() {
-  const { clients, deleteClient, invoices, jobs } = useDataStore();
+  const { clients, deleteClient, invoices, jobs, settings } = useDataStore();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -125,13 +126,13 @@ export default function ClientsPage() {
                   </td>
                   <td className="hide-mobile">{client.category ? <CategoryBadge cat={client.category} /> : '—'}</td>
                   <td className="text-right hide-mobile"><span style={{ fontWeight: 600 }}>{clientJobs(client.id)}</span></td>
-                  <td className="text-right hide-mobile"><span style={{ fontWeight: 600, color: 'var(--primary)' }}>GH₵ {clientRevenue(client.id).toLocaleString()}</span></td>
+                  <td className="text-right hide-mobile"><span style={{ fontWeight: 600, color: 'var(--primary)' }}>{formatCurrency(clientRevenue(client.id), settings.currency)}</span></td>
                   <td>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 4 }}>
-                      <button onClick={() => { setEditId(client.id); setIsFormOpen(true); }} className="btn btn-ghost btn-icon btn-sm" title="Edit">
+                      <button onClick={() => { setEditId(client.id); setIsFormOpen(true); }} className="btn btn-ghost btn-icon btn-sm" title="Edit" aria-label="Edit client">
                         <Edit2 size={16} />
                       </button>
-                      <button onClick={() => handleDelete(client.id)} className="btn btn-danger btn-icon btn-sm" title="Delete">
+                      <button onClick={() => handleDelete(client.id)} className="btn btn-danger btn-icon btn-sm" title="Delete" aria-label="Delete client">
                         <Trash2 size={16} />
                       </button>
                     </div>

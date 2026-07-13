@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Save, Upload, Building2, Sliders, Lock, Check, Trash2 } from 'lucide-react';
 import Layout from '../components/Layout';
 import { useDataStore } from '../stores/dataStore';
@@ -12,6 +12,10 @@ export default function SettingsPage() {
   const [tab, setTab] = useState<'company' | 'preferences' | 'security'>('company');
   const [form, setForm] = useState(settings);
   const [pwForm, setPwForm] = useState({ old: '', new: '', confirm: '' });
+
+  // Settings load asynchronously; sync the form once they arrive so it doesn't
+  // stay stuck on the default values.
+  useEffect(() => { setForm(settings); }, [settings]);
 
   const handleSave = async () => {
     try {

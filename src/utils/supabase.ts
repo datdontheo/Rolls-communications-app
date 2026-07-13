@@ -28,30 +28,25 @@ export const convertKeysToCamel = (obj: any): any => {
 
 // ─── Supabase client ──────────────────────────────────────────────────────────
 
-let isConfigured = false;
-let rawClient: any;
-
-const buildClient = () => {
-  console.log('Building Supabase client...');
-  console.log('VITE_SUPABASE_URL:', supabaseUrl ? 'SET' : 'NOT SET');
-  console.log('VITE_SUPABASE_ANON_KEY:', supabaseAnonKey ? 'SET' : 'NOT SET');
-
-  if (supabaseUrl && supabaseAnonKey) {
-    try {
-      rawClient = createClient(supabaseUrl, supabaseAnonKey);
-      isConfigured = true;
-      console.log('✓ Supabase client initialized successfully');
-      return rawClient;
-    } catch (error) {
-      console.error('Supabase init failed:', error);
-      throw new Error('Supabase is required but not available. Please check your environment variables.');
-    }
-  }
-  console.error('Missing Supabase credentials');
-  throw new Error('Supabase credentials not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
+// Build the client lazily and NEVER throw at import time — a throw here would
+// prevent the whole app from mounting (white screen) before any error UI can
+// render. If credentials are missing we degrade gracefully: every query resolves
+// to a clear error, which the data store surfaces to the user via a banner.
+const NOT_CONFIGURED_ERROR = {
+  message: 'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.',
 };
 
-const baseSupabase = buildClient();
+let baseSupabase: any = null;
+let isConfigured = false;
+
+if (supabaseUrl && supabaseAnonKey) {
+  try {
+    baseSupabase = createClient(supabaseUrl, supabaseAnonKey);
+    isConfigured = true;
+  } catch (error) {
+    console.error('Supabase init failed:', error);
+  }
+}
 
 // ─── Helper to run a query and convert keys ───────────────────────────────────
 
@@ -65,10 +60,26 @@ async function runSelectSingle(q: any): Promise<{ data: any; error: any }> {
   return { data: convertKeysToCamel(data), error };
 }
 
+// Returned for every operation when Supabase isn't configured so callers get a
+// consistent `{ error }` instead of a thrown exception.
+const notConfigured = { data: null, error: NOT_CONFIGURED_ERROR };
+const unconfiguredTable = {
+  select: () => ({
+    run: async () => notConfigured,
+    single: async () => notConfigured,
+    eq: () => ({ run: async () => notConfigured, single: async () => notConfigured }),
+  }),
+  insert: async () => notConfigured,
+  upsert: async () => notConfigured,
+  update: () => ({ eq: async () => notConfigured }),
+  delete: () => ({ eq: async () => notConfigured }),
+};
+
 // ─── Wrapper with full camelCase ↔ snake_case conversion ─────────────────────
 
 export const supabase = {
   from: (table: string) => {
+    if (!isConfigured) return unconfiguredTable;
     const base = baseSupabase.from(table);
     return {
       select: (query: string) => {
@@ -86,6 +97,7 @@ export const supabase = {
         };
       },
       insert: (record: any) => base.insert(convertKeysToSnake(record)),
+      upsert: (record: any) => base.upsert(convertKeysToSnake(record)),
       update: (updates: any) => ({
         eq: (field: string, value: any) =>
           base.update(convertKeysToSnake(updates)).eq(camelToSnake(field), value),
@@ -96,7 +108,7 @@ export const supabase = {
       }),
     };
   },
-  auth: baseSupabase.auth,
+  auth: baseSupabase?.auth,
 };
 
 export const isSupabaseAvailable = () => isConfigured;

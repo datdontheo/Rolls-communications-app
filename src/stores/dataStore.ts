@@ -16,6 +16,7 @@ interface DataState {
   // Loading state
   isLoading: boolean;
   error: string | null;
+  clearError: () => void;
 
   // Company Settings
   settings: CompanySettings;
@@ -94,6 +95,7 @@ const DEFAULT_SETTINGS: CompanySettings = {
 export const useDataStore = create<DataState>((set, get) => ({
   isLoading: false,
   error: null,
+  clearError: () => set({ error: null }),
 
   settings: DEFAULT_SETTINGS,
 
@@ -111,15 +113,18 @@ export const useDataStore = create<DataState>((set, get) => ({
 
   updateSettings: async (newSettings) => {
     try {
+      // Upsert the full merged row (keyed on id='settings') so the save works
+      // whether or not the row already exists, instead of a plain update that
+      // silently matches 0 rows.
+      const merged = { ...get().settings, ...newSettings };
       const { error } = await supabase
         .from('company_settings')
-        .update(newSettings)
-        .eq('id', 'settings');
+        .upsert({ ...merged, id: 'settings' });
       if (error) {
-        console.error('Supabase update error:', error);
+        console.error('Supabase upsert error:', error);
         throw new Error(`Supabase error: ${error.message || JSON.stringify(error)}`);
       }
-      set((state) => ({ settings: { ...state.settings, ...newSettings } }));
+      set({ settings: merged });
     } catch (err) {
       console.error('Failed to update settings:', err);
       set({ error: 'Failed to update settings' });
@@ -214,9 +219,6 @@ export const useDataStore = create<DataState>((set, get) => ({
         });
       });
 
-      console.log('Loaded invoices:', invoices?.length, 'with line items:', lineItems?.length);
-      console.log('Items by invoice ID:', itemsByInvoiceId);
-
       // Attach line items to invoices
       const invoicesWithItems = (invoices || []).map((inv: any) => {
         const items = itemsByInvoiceId[inv.id] || [];
@@ -263,13 +265,11 @@ export const useDataStore = create<DataState>((set, get) => ({
           unitCost: item.unitCost || 0,
         }));
 
-        console.log('Inserting line items:', lineItemsData);
         const { error: itemsError } = await supabase.from('line_items').insert(lineItemsData);
         if (itemsError) {
           console.error('Failed to insert line items:', itemsError);
           throw new Error(`Failed to save invoice items: ${itemsError.message}`);
         }
-        console.log('Line items saved successfully');
       }
 
       const newInvoice = { ...invoiceData, id, number, items, createdAt: now, updatedAt: now };

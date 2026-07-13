@@ -1,13 +1,24 @@
-import { useMemo, useState } from 'react';
-import { Plus, Edit2, Trash2, Eye, FileText, Download } from 'lucide-react';
+import { useMemo, useState, lazy, Suspense } from 'react';
+import { Plus, Edit2, Trash2, Eye, FileText, Download, Loader2 } from 'lucide-react';
 import Layout from '../components/Layout';
 import Modal from '../components/Modal';
 import { useDataStore } from '../stores/dataStore';
 import { formatCurrency, formatDate } from '../utils/formatting';
 import InvoiceForm from '../components/InvoiceForm';
-import InvoicePDF from '../components/InvoicePDF';
-import PaymentReceiptPDF from '../components/PaymentReceiptPDF';
 import { useToast } from '../components/Toast';
+
+// The PDF renderer (@react-pdf/renderer) is heavy and only needed when previewing
+// or downloading, so load it on demand to keep the initial bundle small.
+const InvoicePDF = lazy(() => import('../components/InvoicePDF'));
+const PaymentReceiptPDF = lazy(() => import('../components/PaymentReceiptPDF'));
+
+function PdfFallback() {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: 48, color: 'var(--text-muted)' }}>
+      <Loader2 size={20} className="spinner" /> Preparing document…
+    </div>
+  );
+}
 
 function StatusBadge({ status }: { status: string }) {
   const s = status.toLowerCase().replace(/\s+/g, '-');
@@ -123,18 +134,18 @@ export default function InvoicesPage() {
                   <td><StatusBadge status={inv.status} /></td>
                   <td>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 4 }}>
-                      <button onClick={() => setViewId(inv.id)} className="btn btn-ghost btn-icon btn-sm" title="Preview PDF">
+                      <button onClick={() => setViewId(inv.id)} className="btn btn-ghost btn-icon btn-sm" title="Preview PDF" aria-label="Preview invoice PDF">
                         <Eye size={16} />
                       </button>
                       {inv.status === 'Paid' && (
-                        <button onClick={() => setReceiptId(inv.id)} className="btn btn-ghost btn-icon btn-sm" title="Download Payment Receipt">
+                        <button onClick={() => setReceiptId(inv.id)} className="btn btn-ghost btn-icon btn-sm" title="Download Payment Receipt" aria-label="Download payment receipt">
                           <Download size={16} />
                         </button>
                       )}
-                      <button onClick={() => openEdit(inv.id)} className="btn btn-ghost btn-icon btn-sm" title="Edit">
+                      <button onClick={() => openEdit(inv.id)} className="btn btn-ghost btn-icon btn-sm" title="Edit" aria-label="Edit invoice">
                         <Edit2 size={16} />
                       </button>
-                      <button onClick={() => handleDelete(inv.id)} className="btn btn-danger btn-icon btn-sm" title="Delete">
+                      <button onClick={() => handleDelete(inv.id)} className="btn btn-danger btn-icon btn-sm" title="Delete" aria-label="Delete invoice">
                         <Trash2 size={16} />
                       </button>
                     </div>
@@ -161,11 +172,11 @@ export default function InvoicesPage() {
       </Modal>
 
       <Modal isOpen={!!viewId} title="Invoice Preview" onClose={() => setViewId(null)} size="md">
-        {viewId && <InvoicePDF invoiceId={viewId} />}
+        {viewId && <Suspense fallback={<PdfFallback />}><InvoicePDF invoiceId={viewId} /></Suspense>}
       </Modal>
 
       <Modal isOpen={!!receiptId} title="Payment Receipt" onClose={() => setReceiptId(null)} size="md">
-        {receiptId && <PaymentReceiptPDF invoiceId={receiptId} />}
+        {receiptId && <Suspense fallback={<PdfFallback />}><PaymentReceiptPDF invoiceId={receiptId} /></Suspense>}
       </Modal>
     </Layout>
   );

@@ -116,7 +116,7 @@ export default function FinancialsPage() {
               <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
                 <div className="form-group" style={{ flex: 1 }}>
                   <label className="form-label">Amount</label>
-                  <input type="number" className="input-field" placeholder="0.00" value={incForm.amount} onChange={e => setIncForm(f => ({ ...f, amount: e.target.value }))} />
+                  <input type="number" inputMode="decimal" className="input-field" placeholder="0.00" value={incForm.amount} onChange={e => setIncForm(f => ({ ...f, amount: e.target.value }))} />
                 </div>
                 <button onClick={handleAddIncome} className="btn btn-primary" style={{ flexShrink: 0 }}><Plus size={17} /></button>
               </div>
@@ -179,7 +179,7 @@ export default function FinancialsPage() {
               <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
                 <div className="form-group" style={{ flex: 1 }}>
                   <label className="form-label">Amount</label>
-                  <input type="number" className="input-field" placeholder="0.00" value={expForm.amount} onChange={e => setExpForm(f => ({ ...f, amount: e.target.value }))} />
+                  <input type="number" inputMode="decimal" className="input-field" placeholder="0.00" value={expForm.amount} onChange={e => setExpForm(f => ({ ...f, amount: e.target.value }))} />
                 </div>
                 <button onClick={handleAddExpense} className="btn btn-primary" style={{ flexShrink: 0 }}><Plus size={17} /></button>
               </div>

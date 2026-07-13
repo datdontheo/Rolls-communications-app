@@ -17,14 +17,13 @@ export const useThemeStore = create<ThemeState>((set) => ({
       applyTheme(newDark);
       return { isDark: newDark };
     });
-    const state = useThemeStore.getState();
-    await supabase.from('settings').update({ theme_preference: state.isDark ? 'dark' : 'light' }).eq('key', 'theme');
+    await persistTheme(useThemeStore.getState().isDark);
   },
 
   setDark: async (isDark: boolean) => {
     set({ isDark });
     applyTheme(isDark);
-    await supabase.from('settings').update({ theme_preference: isDark ? 'dark' : 'light' }).eq('key', 'theme');
+    await persistTheme(isDark);
   },
 
   initTheme: async () => {
@@ -44,6 +43,17 @@ export const useThemeStore = create<ThemeState>((set) => ({
     applyTheme(isDark);
   },
 }));
+
+// Upsert so the preference row is created on first save (a plain update would
+// match 0 rows and silently do nothing). Swallow errors — theme is non-critical
+// and must never surface as an unhandled rejection.
+async function persistTheme(isDark: boolean) {
+  try {
+    await supabase.from('settings').upsert({ key: 'theme', themePreference: isDark ? 'dark' : 'light' });
+  } catch (err) {
+    console.warn('Failed to persist theme preference:', err);
+  }
+}
 
 function applyTheme(isDark: boolean) {
   const html = document.documentElement;

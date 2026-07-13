@@ -63,7 +63,7 @@ export default function DashboardPage() {
   return (
     <Layout>
       {/* Stats */}
-      <div className="grid-5" style={{ marginBottom: 24 }}>
+      <div className="stat-grid stat-grid-5">
         <StatCard icon={<Briefcase size={20} />} label="Active Jobs" value={stats.activeJobs} />
         <StatCard icon={<FileText size={20} />} label="Invoices Due" value={stats.invoicesDue} trendLabel="this week" />
         <StatCard icon={<DollarSign size={20} />} label="Monthly Income" value={formatCurrency(stats.monthlyIncome, settings.currency)} accent />

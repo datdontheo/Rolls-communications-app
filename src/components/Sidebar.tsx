@@ -47,8 +47,15 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
       {/* Backdrop overlay on mobile */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-30 md:hidden"
-          style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}
+          className="mobile-only"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 30,
+            background: 'rgba(0,0,0,0.55)',
+            backdropFilter: 'blur(4px)',
+            WebkitBackdropFilter: 'blur(4px)',
+          }}
           onClick={() => setIsOpen(false)}
         />
       )}
@@ -102,7 +109,8 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
           {/* Close button visible on mobile only */}
           <button
             onClick={() => setIsOpen(false)}
-            className="md:hidden"
+            className="mobile-only"
+            aria-label="Close menu"
             style={{
               display: 'flex',
               alignItems: 'center',

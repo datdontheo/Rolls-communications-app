@@ -1,7 +1,7 @@
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Loader2 } from 'lucide-react';
 import { useDataStore } from '../stores/dataStore';
 import { useToast } from './Toast';
 
@@ -22,7 +22,7 @@ export default function JobForm({ jobId, onClose }: { jobId?: string | null; onC
   const toast = useToast();
   const job = jobId ? getJob(jobId) : null;
 
-  const { register, control, handleSubmit, formState: { errors } } = useForm<FormData>({
+  const { register, control, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: job ? {
       clientId: job.clientId,
@@ -135,10 +135,12 @@ export default function JobForm({ jobId, onClose }: { jobId?: string | null; onC
       </div>
 
       <div style={{ display: 'flex', gap: 10 }}>
-        <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
-          {job ? 'Update Job' : 'Create Job Order'}
+        <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={isSubmitting}>
+          {isSubmitting
+            ? <><Loader2 size={16} className="spinner" /> Saving…</>
+            : job ? 'Update Job' : 'Create Job Order'}
         </button>
-        <button type="button" onClick={onClose} className="btn btn-outline" style={{ flex: 1 }}>Cancel</button>
+        <button type="button" onClick={onClose} className="btn btn-outline" style={{ flex: 1 }} disabled={isSubmitting}>Cancel</button>
       </div>
     </form>
   );

@@ -1,15 +1,26 @@
 import { format } from 'date-fns';
 
-export function formatCurrency(amount: number, currency: string = 'GHS'): string {
-  return `${currency} ${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+// Map currency codes to their display symbol. GHS renders as the cedi sign to
+// match how the business writes it; unknown codes fall back to the raw code.
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  GHS: 'GH₵',
+};
+
+export function currencySymbol(currency: string = 'GHS'): string {
+  return CURRENCY_SYMBOLS[currency] ?? currency;
 }
 
+export function formatCurrency(amount: number, currency: string = 'GHS'): string {
+  return `${currencySymbol(currency)} ${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+// Ghana locale uses day/month/year.
 export function formatDate(date: string | Date): string {
-  return format(new Date(date), 'MMM dd, yyyy');
+  return format(new Date(date), 'dd/MM/yyyy');
 }
 
 export function formatDateTime(date: string | Date): string {
-  return format(new Date(date), 'MMM dd, yyyy HH:mm');
+  return format(new Date(date), 'dd/MM/yyyy HH:mm');
 }
 
 export function calculateVAT(amount: number, rate: number = 20): number {

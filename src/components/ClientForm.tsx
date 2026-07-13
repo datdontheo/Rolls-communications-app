@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { Loader2 } from 'lucide-react';
 import { useDataStore } from '../stores/dataStore';
 import { useToast } from './Toast';
 
@@ -21,7 +22,7 @@ export default function ClientForm({ clientId, onClose }: { clientId?: string | 
   const toast = useToast();
   const client = clientId ? getClient(clientId) : null;
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: client ?? { name: '', phone: '', company: '', email: '', address: '', category: 'Active' },
   });
@@ -52,12 +53,12 @@ export default function ClientForm({ clientId, onClose }: { clientId?: string | 
         </div>
         <div className="form-group">
           <label className="form-label">Email</label>
-          <input {...register('email')} type="email" className="input-field" placeholder="john@company.com" />
+          <input {...register('email')} type="email" inputMode="email" autoComplete="email" className="input-field" placeholder="john@company.com" />
           {errors.email && <p className="form-error">{errors.email.message}</p>}
         </div>
         <div className="form-group">
           <label className="form-label">Phone *</label>
-          <input {...register('phone')} className="input-field" placeholder="020 000 0000" />
+          <input {...register('phone')} type="tel" inputMode="tel" autoComplete="tel" className="input-field" placeholder="020 000 0000" />
           {errors.phone && <p className="form-error">{errors.phone.message}</p>}
         </div>
         <div className="form-group">
@@ -78,10 +79,12 @@ export default function ClientForm({ clientId, onClose }: { clientId?: string | 
         <textarea {...register('address')} className="input-field" placeholder="Physical address" style={{ minHeight: 72 }} />
       </div>
       <div style={{ display: 'flex', gap: 10 }}>
-        <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
-          {client ? 'Update Client' : 'Create Client'}
+        <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={isSubmitting}>
+          {isSubmitting
+            ? <><Loader2 size={16} className="spinner" /> Saving…</>
+            : client ? 'Update Client' : 'Create Client'}
         </button>
-        <button type="button" onClick={onClose} className="btn btn-outline" style={{ flex: 1 }}>Cancel</button>
+        <button type="button" onClick={onClose} className="btn btn-outline" style={{ flex: 1 }} disabled={isSubmitting}>Cancel</button>
       </div>
     </form>
   );

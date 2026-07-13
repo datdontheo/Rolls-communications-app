@@ -25,7 +25,9 @@ create table if not exists invoices (
   client_address text not null,
   date text not null,
   due_date text,
-  items jsonb not null,
+  -- Line items now live in the dedicated `line_items` table; this legacy column
+  -- is kept nullable for backwards compatibility.
+  items jsonb,
   subtotal numeric not null,
   vat_rate numeric not null default 20,
   vat numeric not null,
@@ -34,6 +36,17 @@ create table if not exists invoices (
   notes text,
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now()
+);
+
+-- Invoice line items (one row per item on an invoice)
+create table if not exists line_items (
+  id text primary key,
+  invoice_id text references invoices(id) on delete cascade,
+  item text,
+  description text,
+  qty numeric not null default 0,
+  unit_cost numeric not null default 0,
+  created_at timestamp with time zone default now()
 );
 
 -- Quotations table
@@ -139,6 +152,7 @@ create table if not exists settings (
 create index if not exists idx_invoices_client_id on invoices(client_id);
 create index if not exists idx_invoices_status on invoices(status);
 create index if not exists idx_invoices_date on invoices(date);
+create index if not exists idx_line_items_invoice_id on line_items(invoice_id);
 create index if not exists idx_quotations_client_id on quotations(client_id);
 create index if not exists idx_quotations_status on quotations(status);
 create index if not exists idx_jobs_client_id on jobs(client_id);
@@ -149,6 +163,7 @@ create index if not exists idx_expense_date on expense_entries(date);
 -- Disable row level security to allow anon key access
 alter table clients disable row level security;
 alter table invoices disable row level security;
+alter table line_items disable row level security;
 alter table quotations disable row level security;
 alter table jobs disable row level security;
 alter table income_entries disable row level security;

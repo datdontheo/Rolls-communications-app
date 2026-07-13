@@ -50,12 +50,12 @@ export default function ToastContainer() {
   }, []);
 
   return (
-    <div className="toast-container">
+    <div className="toast-container" aria-live="polite" aria-atomic="false">
       {toasts.map(toast => (
-        <div key={toast.id} className={`toast toast-${toast.type}`}>
+        <div key={toast.id} className={`toast toast-${toast.type}`} role={toast.type === 'error' ? 'alert' : 'status'}>
           <span className="toast-icon">{ICONS[toast.type]}</span>
           <span className="toast-message">{toast.message}</span>
-          <button className="toast-close" onClick={() => toastStore.remove(toast.id)}>
+          <button className="toast-close" onClick={() => toastStore.remove(toast.id)} aria-label="Dismiss notification">
             <X size={16} />
           </button>
         </div>

@@ -107,7 +107,7 @@ export default function ReportsPage() {
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: COLORS[i % COLORS.length], flexShrink: 0 }} />
                     <span style={{ flex: 1, color: 'var(--text-muted)' }}>{s.name}</span>
                     <span style={{ fontWeight: 600 }}>{formatCurrency(s.value, settings.currency)}</span>
-                    <span style={{ color: 'var(--text-muted)' }}>({((s.value / totalRev) * 100).toFixed(0)}%)</span>
+                    <span style={{ color: 'var(--text-muted)' }}>({totalRev > 0 ? ((s.value / totalRev) * 100).toFixed(0) : 0}%)</span>
                   </div>
                 ))}
               </div>

@@ -23,10 +23,11 @@ Internal business management web app for **Rolls Communications**, an advertisin
 
 | Layer | Library |
 |---|---|
-| Framework | React 18 + Vite + TypeScript |
-| Styling | Tailwind CSS v4 + CSS custom properties |
-| State | Zustand (localStorage persistence) |
-| Routing | React Router v6 |
+| Framework | React 19 + Vite + TypeScript |
+| Styling | Custom CSS + CSS custom properties (light/dark themes) |
+| State | Zustand |
+| Backend | Supabase (hosted Postgres) |
+| Routing | React Router v7 |
 | Forms | React Hook Form + Zod |
 | PDF | @react-pdf/renderer |
 | Charts | Recharts |
@@ -82,6 +83,7 @@ src/
 
 - Node.js 18+
 - npm 9+
+- A Supabase project (run `supabase/schema.sql` against it to create the tables)
 
 ### Installation
 
@@ -89,6 +91,13 @@ src/
 git clone https://github.com/datdontheo/rolls-communications-app.git
 cd rolls-communications-app
 npm install
+```
+
+Create a `.env` file with your Supabase credentials:
+
+```bash
+VITE_SUPABASE_URL=your-project-url
+VITE_SUPABASE_ANON_KEY=your-anon-key
 ```
 
 ### Development
@@ -118,18 +127,14 @@ npm run preview   # preview the production build locally
 
 ---
 
-## Demo Data
+## Data
 
-On first launch (empty localStorage), the app seeds realistic Ghanaian business sample data:
+All business data (clients, invoices, quotations, jobs, income, expenses, stock and
+company settings) is stored in **Supabase**. The app reads and writes directly via the
+Supabase JS client using the anon key. Only the login session (“keep me logged in”) is
+kept in browser `localStorage`.
 
-- **5 clients** — Akrofi-Christaller Institute, GN Bank Ghana Ltd, Kofi Asante Mensah, Accra City Mall Ltd, Ghana Tourism Authority
-- **3 invoices** — one Paid (GH₵43,500 branded merchandise for Akrofi), one Sent, one Overdue
-- **3 quotations** — Pending, Accepted, and Rejected examples
-- **3 jobs** — New, In Progress, and Completed with production stages
-- **Income & expense history** — 7 months of entries for dashboard and report charts
-- **14 inventory items** — vinyl rolls, inks, paper, substrates, blank branded items
-
-To reset to demo data, clear the `rollsApp` key from browser localStorage and refresh.
+To clear all data, use **Settings → Security → Clear All App Data**.
 
 ---
 
@@ -152,4 +157,4 @@ Push to `main` triggers an automatic Vercel deployment.
 - Currency: **Ghana Cedi (GH₵)**
 - Date display: **DD/MM/YYYY**
 - VAT default: **20%** (configurable in Settings)
-- All data stored offline in browser **localStorage** — no backend required
+- Data is stored in **Supabase** (see the Data section above)

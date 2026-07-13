@@ -1,10 +1,11 @@
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Loader2 } from 'lucide-react';
 import { useDataStore } from '../stores/dataStore';
 import { useToast } from './Toast';
 import { generateQuoteNumber } from '../utils/generators';
+import { formatCurrency } from '../utils/formatting';
 
 const schema = z.object({
   clientId: z.string().min(1, 'Client is required'),
@@ -27,7 +28,7 @@ export default function QuotationForm({ quotationId, onClose }: { quotationId?: 
   const toast = useToast();
   const quotation = quotationId ? getQuotation(quotationId) : null;
 
-  const { register, control, handleSubmit, watch, formState: { errors } } = useForm<FormData>({
+  const { register, control, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: quotation ? {
       clientId: quotation.clientId,
@@ -39,7 +40,7 @@ export default function QuotationForm({ quotationId, onClose }: { quotationId?: 
     } : {
       clientId: '',
       date: new Date().toISOString().split('T')[0],
-      vatRate: 20,
+      vatRate: settings.vatRate,
       items: [{ item: '', description: '', qty: 1, unitCost: 0 }],
       status: 'Pending',
     },
@@ -94,7 +95,7 @@ export default function QuotationForm({ quotationId, onClose }: { quotationId?: 
         </div>
         <div className="form-group">
           <label className="form-label">VAT Rate (%)</label>
-          <input type="number" {...register('vatRate', { valueAsNumber: true })} min={0} max={100} step={0.01} className="input-field" />
+          <input type="number" inputMode="decimal" {...register('vatRate', { valueAsNumber: true })} min={0} max={100} step={0.01} className="input-field" />
           {errors.vatRate && <p className="form-error">{errors.vatRate.message}</p>}
         </div>
       </div>
@@ -103,7 +104,7 @@ export default function QuotationForm({ quotationId, onClose }: { quotationId?: 
         <label className="form-label" style={{ marginBottom: 10, display: 'block' }}>Items</label>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {/* Header */}
-          <div className="line-item-row" style={{ padding: '0 0 4px' }}>
+          <div className="line-item-row line-item-header" style={{ padding: '0 0 4px' }}>
             <p style={{ width: 120, fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Item</p>
             <p style={{ flex: 1, fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Description</p>
             <p style={{ width: 70, fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Qty</p>
@@ -115,22 +116,22 @@ export default function QuotationForm({ quotationId, onClose }: { quotationId?: 
           {fields.map((field, idx) => (
             <div key={field.id} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               <div className="line-item-row" style={{ alignItems: 'center' }}>
-                <div style={{ width: 120 }}>
+                <div className="line-item-item">
                   <input {...register(`items.${idx}.item`)} placeholder="Item name" className="input-field" />
                 </div>
                 <div className="line-item-desc">
                   <input {...register(`items.${idx}.description`)} placeholder="Description" className="input-field" />
                 </div>
                 <div className="line-item-qty">
-                  <input {...register(`items.${idx}.qty`, { valueAsNumber: true })} type="number" min={1} className="input-field" />
+                  <input {...register(`items.${idx}.qty`, { valueAsNumber: true })} type="number" inputMode="numeric" min={1} placeholder="Qty" className="input-field" />
                 </div>
                 <div className="line-item-cost">
-                  <input {...register(`items.${idx}.unitCost`, { valueAsNumber: true })} type="number" step="0.01" min={0} className="input-field" />
+                  <input {...register(`items.${idx}.unitCost`, { valueAsNumber: true })} type="number" inputMode="decimal" step="0.01" min={0} placeholder="Unit cost" className="input-field" />
                 </div>
-                <div style={{ width: 100, textAlign: 'right', fontSize: 13.5, fontWeight: 600 }}>
-                  {settings.currency} {((items[idx]?.qty || 0) * (items[idx]?.unitCost || 0)).toFixed(2)}
+                <div className="line-item-total" style={{ fontSize: 13.5, fontWeight: 600 }}>
+                  {formatCurrency((items[idx]?.qty || 0) * (items[idx]?.unitCost || 0), settings.currency)}
                 </div>
-                <button type="button" onClick={() => remove(idx)} className="btn btn-danger btn-icon btn-sm">
+                <button type="button" onClick={() => remove(idx)} className="btn btn-danger btn-icon btn-sm" aria-label="Remove item">
                   <Trash2 size={15} />
                 </button>
               </div>
@@ -150,15 +151,15 @@ export default function QuotationForm({ quotationId, onClose }: { quotationId?: 
       <div className="totals-box">
         <div className="total-row">
           <span>Subtotal</span>
-          <span className="amount">{settings.currency} {subtotal.toFixed(2)}</span>
+          <span className="amount">{formatCurrency(subtotal, settings.currency)}</span>
         </div>
         <div className="total-row">
           <span>VAT ({vatRate}%)</span>
-          <span className="amount">{settings.currency} {vat.toFixed(2)}</span>
+          <span className="amount">{formatCurrency(vat, settings.currency)}</span>
         </div>
         <div className="total-row final">
           <span>Total</span>
-          <span className="amount">{settings.currency} {total.toFixed(2)}</span>
+          <span className="amount">{formatCurrency(total, settings.currency)}</span>
         </div>
       </div>
 
@@ -178,10 +179,12 @@ export default function QuotationForm({ quotationId, onClose }: { quotationId?: 
       </div>
 
       <div style={{ display: 'flex', gap: 10 }}>
-        <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
-          {quotation ? 'Update Quotation' : 'Create Quotation'}
+        <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={isSubmitting}>
+          {isSubmitting
+            ? <><Loader2 size={16} className="spinner" /> Saving…</>
+            : quotation ? 'Update Quotation' : 'Create Quotation'}
         </button>
-        <button type="button" onClick={onClose} className="btn btn-outline" style={{ flex: 1 }}>Cancel</button>
+        <button type="button" onClick={onClose} className="btn btn-outline" style={{ flex: 1 }} disabled={isSubmitting}>Cancel</button>
       </div>
     </form>
   );
